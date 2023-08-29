@@ -555,7 +555,7 @@ function createRandom (defaultSeed) {
 
 module.exports = createRandom();
 
-},{"defined":5,"seed-random":38,"simplex-noise":39}],4:[function(require,module,exports){
+},{"defined":5,"seed-random":6,"simplex-noise":7}],4:[function(require,module,exports){
 (function (global){(function (){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -2726,272 +2726,6 @@ module.exports = function defined() {
 };
 
 },{}],6:[function(require,module,exports){
-function backInOut(t) {
-  var s = 1.70158 * 1.525
-  if ((t *= 2) < 1)
-    return 0.5 * (t * t * ((s + 1) * t - s))
-  return 0.5 * ((t -= 2) * t * ((s + 1) * t + s) + 2)
-}
-
-module.exports = backInOut
-},{}],7:[function(require,module,exports){
-function backIn(t) {
-  var s = 1.70158
-  return t * t * ((s + 1) * t - s)
-}
-
-module.exports = backIn
-},{}],8:[function(require,module,exports){
-function backOut(t) {
-  var s = 1.70158
-  return --t * t * ((s + 1) * t + s) + 1
-}
-
-module.exports = backOut
-},{}],9:[function(require,module,exports){
-var bounceOut = require('./bounce-out')
-
-function bounceInOut(t) {
-  return t < 0.5
-    ? 0.5 * (1.0 - bounceOut(1.0 - t * 2.0))
-    : 0.5 * bounceOut(t * 2.0 - 1.0) + 0.5
-}
-
-module.exports = bounceInOut
-},{"./bounce-out":11}],10:[function(require,module,exports){
-var bounceOut = require('./bounce-out')
-
-function bounceIn(t) {
-  return 1.0 - bounceOut(1.0 - t)
-}
-
-module.exports = bounceIn
-},{"./bounce-out":11}],11:[function(require,module,exports){
-function bounceOut(t) {
-  var a = 4.0 / 11.0
-  var b = 8.0 / 11.0
-  var c = 9.0 / 10.0
-
-  var ca = 4356.0 / 361.0
-  var cb = 35442.0 / 1805.0
-  var cc = 16061.0 / 1805.0
-
-  var t2 = t * t
-
-  return t < a
-    ? 7.5625 * t2
-    : t < b
-      ? 9.075 * t2 - 9.9 * t + 3.4
-      : t < c
-        ? ca * t2 - cb * t + cc
-        : 10.8 * t * t - 20.52 * t + 10.72
-}
-
-module.exports = bounceOut
-},{}],12:[function(require,module,exports){
-function circInOut(t) {
-  if ((t *= 2) < 1) return -0.5 * (Math.sqrt(1 - t * t) - 1)
-  return 0.5 * (Math.sqrt(1 - (t -= 2) * t) + 1)
-}
-
-module.exports = circInOut
-},{}],13:[function(require,module,exports){
-function circIn(t) {
-  return 1.0 - Math.sqrt(1.0 - t * t)
-}
-
-module.exports = circIn
-},{}],14:[function(require,module,exports){
-function circOut(t) {
-  return Math.sqrt(1 - ( --t * t ))
-}
-
-module.exports = circOut
-},{}],15:[function(require,module,exports){
-function cubicInOut(t) {
-  return t < 0.5
-    ? 4.0 * t * t * t
-    : 0.5 * Math.pow(2.0 * t - 2.0, 3.0) + 1.0
-}
-
-module.exports = cubicInOut
-},{}],16:[function(require,module,exports){
-function cubicIn(t) {
-  return t * t * t
-}
-
-module.exports = cubicIn
-},{}],17:[function(require,module,exports){
-function cubicOut(t) {
-  var f = t - 1.0
-  return f * f * f + 1.0
-}
-
-module.exports = cubicOut
-},{}],18:[function(require,module,exports){
-function elasticInOut(t) {
-  return t < 0.5
-    ? 0.5 * Math.sin(+13.0 * Math.PI/2 * 2.0 * t) * Math.pow(2.0, 10.0 * (2.0 * t - 1.0))
-    : 0.5 * Math.sin(-13.0 * Math.PI/2 * ((2.0 * t - 1.0) + 1.0)) * Math.pow(2.0, -10.0 * (2.0 * t - 1.0)) + 1.0
-}
-
-module.exports = elasticInOut
-},{}],19:[function(require,module,exports){
-function elasticIn(t) {
-  return Math.sin(13.0 * t * Math.PI/2) * Math.pow(2.0, 10.0 * (t - 1.0))
-}
-
-module.exports = elasticIn
-},{}],20:[function(require,module,exports){
-function elasticOut(t) {
-  return Math.sin(-13.0 * (t + 1.0) * Math.PI/2) * Math.pow(2.0, -10.0 * t) + 1.0
-}
-
-module.exports = elasticOut
-},{}],21:[function(require,module,exports){
-function expoInOut(t) {
-  return (t === 0.0 || t === 1.0)
-    ? t
-    : t < 0.5
-      ? +0.5 * Math.pow(2.0, (20.0 * t) - 10.0)
-      : -0.5 * Math.pow(2.0, 10.0 - (t * 20.0)) + 1.0
-}
-
-module.exports = expoInOut
-},{}],22:[function(require,module,exports){
-function expoIn(t) {
-  return t === 0.0 ? t : Math.pow(2.0, 10.0 * (t - 1.0))
-}
-
-module.exports = expoIn
-},{}],23:[function(require,module,exports){
-function expoOut(t) {
-  return t === 1.0 ? t : 1.0 - Math.pow(2.0, -10.0 * t)
-}
-
-module.exports = expoOut
-},{}],24:[function(require,module,exports){
-module.exports = {
-	'backInOut': require('./back-in-out'),
-	'backIn': require('./back-in'),
-	'backOut': require('./back-out'),
-	'bounceInOut': require('./bounce-in-out'),
-	'bounceIn': require('./bounce-in'),
-	'bounceOut': require('./bounce-out'),
-	'circInOut': require('./circ-in-out'),
-	'circIn': require('./circ-in'),
-	'circOut': require('./circ-out'),
-	'cubicInOut': require('./cubic-in-out'),
-	'cubicIn': require('./cubic-in'),
-	'cubicOut': require('./cubic-out'),
-	'elasticInOut': require('./elastic-in-out'),
-	'elasticIn': require('./elastic-in'),
-	'elasticOut': require('./elastic-out'),
-	'expoInOut': require('./expo-in-out'),
-	'expoIn': require('./expo-in'),
-	'expoOut': require('./expo-out'),
-	'linear': require('./linear'),
-	'quadInOut': require('./quad-in-out'),
-	'quadIn': require('./quad-in'),
-	'quadOut': require('./quad-out'),
-	'quartInOut': require('./quart-in-out'),
-	'quartIn': require('./quart-in'),
-	'quartOut': require('./quart-out'),
-	'quintInOut': require('./quint-in-out'),
-	'quintIn': require('./quint-in'),
-	'quintOut': require('./quint-out'),
-	'sineInOut': require('./sine-in-out'),
-	'sineIn': require('./sine-in'),
-	'sineOut': require('./sine-out')
-}
-},{"./back-in":7,"./back-in-out":6,"./back-out":8,"./bounce-in":10,"./bounce-in-out":9,"./bounce-out":11,"./circ-in":13,"./circ-in-out":12,"./circ-out":14,"./cubic-in":16,"./cubic-in-out":15,"./cubic-out":17,"./elastic-in":19,"./elastic-in-out":18,"./elastic-out":20,"./expo-in":22,"./expo-in-out":21,"./expo-out":23,"./linear":25,"./quad-in":27,"./quad-in-out":26,"./quad-out":28,"./quart-in":30,"./quart-in-out":29,"./quart-out":31,"./quint-in":33,"./quint-in-out":32,"./quint-out":34,"./sine-in":36,"./sine-in-out":35,"./sine-out":37}],25:[function(require,module,exports){
-function linear(t) {
-  return t
-}
-
-module.exports = linear
-},{}],26:[function(require,module,exports){
-function quadInOut(t) {
-    t /= 0.5
-    if (t < 1) return 0.5*t*t
-    t--
-    return -0.5 * (t*(t-2) - 1)
-}
-
-module.exports = quadInOut
-},{}],27:[function(require,module,exports){
-function quadIn(t) {
-  return t * t
-}
-
-module.exports = quadIn
-},{}],28:[function(require,module,exports){
-function quadOut(t) {
-  return -t * (t - 2.0)
-}
-
-module.exports = quadOut
-},{}],29:[function(require,module,exports){
-function quarticInOut(t) {
-  return t < 0.5
-    ? +8.0 * Math.pow(t, 4.0)
-    : -8.0 * Math.pow(t - 1.0, 4.0) + 1.0
-}
-
-module.exports = quarticInOut
-},{}],30:[function(require,module,exports){
-function quarticIn(t) {
-  return Math.pow(t, 4.0)
-}
-
-module.exports = quarticIn
-},{}],31:[function(require,module,exports){
-function quarticOut(t) {
-  return Math.pow(t - 1.0, 3.0) * (1.0 - t) + 1.0
-}
-
-module.exports = quarticOut
-},{}],32:[function(require,module,exports){
-function qinticInOut(t) {
-    if ( ( t *= 2 ) < 1 ) return 0.5 * t * t * t * t * t
-    return 0.5 * ( ( t -= 2 ) * t * t * t * t + 2 )
-}
-
-module.exports = qinticInOut
-},{}],33:[function(require,module,exports){
-function qinticIn(t) {
-  return t * t * t * t * t
-}
-
-module.exports = qinticIn
-},{}],34:[function(require,module,exports){
-function qinticOut(t) {
-  return --t * t * t * t * t + 1
-}
-
-module.exports = qinticOut
-},{}],35:[function(require,module,exports){
-function sineInOut(t) {
-  return -0.5 * (Math.cos(Math.PI*t) - 1)
-}
-
-module.exports = sineInOut
-},{}],36:[function(require,module,exports){
-function sineIn (t) {
-  var v = Math.cos(t * Math.PI * 0.5)
-  if (Math.abs(v) < 1e-14) return 1
-  else return 1 - v
-}
-
-module.exports = sineIn
-
-},{}],37:[function(require,module,exports){
-function sineOut(t) {
-  return Math.sin(t * Math.PI/2)
-}
-
-module.exports = sineOut
-},{}],38:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -3169,7 +2903,7 @@ mixkey(Math.random(), pool);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],39:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*
  * A fast javascript implementation of simplex noise by Jonas Wagner
 
@@ -3644,234 +3378,156 @@ Better rank ordering method by Stefan Gustavson in 2012.
 
 })();
 
-},{}],40:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 const canvasSketch = require('canvas-sketch');
 const math = require('canvas-sketch-util/math');
-const eases = require('eases');
 const random = require('canvas-sketch-util/random');
+// const colormap = require('colormap');
+
+const seed = random.getRandomSeed();
 
 const settings = {
   dimensions: [ 1080, 1080 ],
   animate: true,
+  name: seed,
 };
 
-let audio;
-let audioContext, audioData, sourceNode, analyserNode;
-let manager;
-let minDb, maxDb;
-
-let imgA;
-
 const sketch = ({ context, width, height }) => {
-  let circles = [
-    {
-      w : width * 0.002,
-      h : height * 0.088,      
-      num : 60,
-      radius : 52,
-      bin: 4,
-    },
-    {
-      w : width * 0.003,
-      h : height * 0.17,      
-      num : 70,
-      radius : 102,
-      bin: 100,
-    },
-    {
-      w : width * 0.002,
-      h : height * 0.32,      
-      num : 60,
-      radius : 200,
-      angle: 140,
-      rotation: 89,
-      bin: 150,
-    },
-    {
-      w : width * 0.002,
-      h : height * 0.54,      
-      num : 60,
-      radius : 296,
-      angle: 71,
-      rotation: 99,
-      bin: 230,
-    },
-  ];
+  random.setSeed(seed);
+  const cols = 72;
+  const rows = 8;
+  const numCells = cols * rows;
 
-  const cx = width * 0.359;
-  const cy = height * 0.626;
-  
-  return ({ context, width, height }) => {
-    context.fillStyle = '#e6e6da';
+  //grid
+  const gw = width * 0.8;
+  const gh = height * 0.8;
+
+  //cell
+  const cw = gw / cols;
+  const ch = gh / rows;
+
+  //margin
+  const mx = (width - gw) * 0.5;
+  const my = (height - gh) * 0.5;
+
+  const points = [];
+
+  let x, y, n, lineWidth, color;
+  let frequency = 0.002;
+  let amplitude = 90;
+
+  const colors = colormap({
+    colormap: 'salinity',
+    nshades: amplitude,
+  })
+
+  for (let i = 0; i < numCells; i++) {
+    x = (i % cols) * cw;
+    y = Math.floor(i / cols) * ch;
+
+    n = random.noise2D(x, y, frequency, amplitude);
+    // x += n;
+    // y += n;
+
+    lineWidth = math.mapRange(n, -amplitude, amplitude, 0, 5);
+
+    color = colors[Math.floor(math.mapRange(n, -amplitude, amplitude, 0, amplitude))];
+    
+    points.push(new Point({ x,y, lineWidth, color }));
+  }
+
+  return ({ context, width, height, frame }) => {
+    context.fillStyle = 'black';
     context.fillRect(0, 0, width, height);
 
-    context.drawImage(imgA, 70, 900, imgA.width * 0.7, imgA.height * 0.7);
-    
-    context.fillStyle = '#4c0116';
-
-    //draw canvas border
     context.save();
-    context.translate(width * 0.5, height * 0.5);
-    context.lineWidth = 50;
-    context.strokeStyle = '#4c0116';
+    context.translate(mx, my);
+    context.translate(cw * 0.5, ch * 0.5);
+    context.strokeStyle = 'red';
+    context.lineWidth = 4;
 
-
-    context.beginPath();
-    context.rect(-width * 0.5, -height * 0.5, width, height);
-    context.stroke();
-
-    context.restore();
-
-    //text
-    context.save();
-    context.translate(0, 0);
-    context.fillText('behance.net/joovidionizi', 75, 50);
-
-    context.restore();
-
-    //text
-    context.save();
-    context.translate(width, 0);
-    context.fillText('Original art by -', -175, 50);
-    context.fillText('Rob Shuttleworth', -174, 70);
-
-    context.restore();
-
-    if(!audioContext) return;
-    
-    analyserNode.getFloatFrequencyData(audioData);
-  
-
-    circles.forEach(circle => {
-      let x,y;
-
-      let cw = circle.w;
-      const ch = circle.h;
-      
-      const cNum = circle.num;
-      const cRadius = circle.radius;
-
-      const cAngle = circle.angle || 360;
-
-      let cRotation = circle.rotation ? math.degToRad(circle.rotation) :  0;
-
-      const cBin = circle.bin;
-
-      //use Bin to change cRotation softly
-      if (cBin) {;
-        const db = audioData[cBin];
-        const dbNorm = math.mapRange(db, minDb, maxDb, 0, 1);
-
-        cRotation = math.lerp(cRotation, dbNorm * Math.PI * 1.4, 1);
-      }
-
-      for (let i = 0; i < cNum; i++) {
-        const slice = math.degToRad(cAngle/cNum);
-        const angle = slice * i + cRotation;
-
-        x = cx + Math.sin(angle) * cRadius;
-        y = cy + Math.cos(angle) * cRadius;
-
-        if (cAngle !== 360){
-          cw += eases.quadIn(i) * 0.00003;
-        }
-
-        context.save();
-        context.translate(x, y);
-        context.rotate(-angle);
-    
-        context.beginPath();
-        context.rect(-cw * 0.5, -ch * 0.5,cw,ch);
-        context.fill();
-        context.restore();
-
-        //draw circle above each rect
-        context.save();
-        
-        context.translate(cx, cy)
-        context.rotate(-angle);
-
-        context.beginPath();
-        context.arc(0, circle.radius + ch * 0.5, cw * 0.8, 0, Math.PI * 2);
-        context.fill();
-
-        context.restore();
-      }
+    //update positions
+    points.forEach(point => {
+      n = random.noise2D(point.ix + frame, point.iy, frequency, amplitude);
+      point.x = point.ix + n;
+      point.y = point.iy + n;
     });
+
+    let lastx, lasty;
+
+    //draw lines
+    for (let r = 0; r < rows; r++) {
+      
+      for (let c = 0; c < cols - 1; c++) {
+        const curr = points[r * cols + c + 0];
+        const next = points[r * cols + c + 1];
+        
+        const mx = curr.x + (next.x - curr.x) * 0.8;
+        const my = curr.y + (next.y - curr.y) * 5.5;
+
+        if (!c) {
+          lastx = curr.x;
+          lasty = curr.y;
+        }
+        
+        context.beginPath();
+        context.lineWidth = curr.lineWidth;
+        context.strokeStyle = curr.color;
+
+        context.moveTo(lastx, lasty);
+        context.quadraticCurveTo(curr.x, curr.y, mx, my);
+        
+        context.stroke();
+
+        lastx = mx - c / cols * 250 ;
+        lasty = my - r / rows * 250;
+      }
+    
+    }
+
+    //draw points
+    points.forEach(point => {
+      // point.draw(context);
+    });
+
+
+
+    context.restore();
   };
 };
 
-const addListeners = () => {
-  window.addEventListener('mouseup', () => {
-    if (!audioContext) createAudio();
+canvasSketch(sketch, settings);
 
-    if (audio.paused) {
-      audio.play();
-      manager.play();
-    } else {
-      audio.pause();
-      manager.pause();
-    }
-  })
-};
+class Point {
+  constructor({x, y, lineWidth, color}) {
+    this.x = x;
+    this.y = y;
+    this.lineWidth = lineWidth;
+    this.color = color;
 
-const createAudio = () => {
-  audio = document.createElement('audio');
-  audio.src = './public/audio/bruno-major-music.mp3';
-
-  audioContext = new AudioContext();
-  
-  sourceNode = audioContext.createMediaElementSource(audio);
-  sourceNode.connect(audioContext.destination);
-
-  analyserNode = audioContext.createAnalyser();
-  analyserNode.fftSize = 512;
-  analyserNode.smoothingTimeConstant = 0.9;
-  sourceNode.connect(analyserNode);
-
-  minDb = analyserNode.minDecibels;
-  maxDb = analyserNode.maxDecibels;
-
-  audioData = new Float32Array(analyserNode.frequencyBinCount);
-
-  // console.log(audioData.length);
-};
-
-const getAverage = data => {
-  let sum = 0;
-
-  for (let i = 0; i < data.length; i++) {
-    sum += data[i];
+    this.ix = x;
+    this.iy = y;
   }
 
-  return sum / data.length;
+  draw(context) {
+    context.save();
+    context.translate(this.x, this.y);
+    context.fillStyle = 'red';
+
+    context.beginPath();
+    context.arc(0, 0, 10, 0, Math.PI * 2);
+    context.fill();
+
+    context.restore();
+  }
 }
-
-const loadImage = async (src) => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject();
-    img.src = src;
-  });
-};
-
-const start = async () => {
-  addListeners();
-  imgA = await loadImage('./public/images/text-image-2.png');
-  manager = await canvasSketch(sketch, settings);
-  manager.pause();
-};
-
-start();
-
-},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3,"eases":24}],41:[function(require,module,exports){
+},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3}],9:[function(require,module,exports){
 (function (global){(function (){
 
 global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}]},{},[40,41])
+},{}]},{},[8,9])
 
-//# sourceMappingURL=sketch--13.js.map
+//# sourceMappingURL=sketch-08.js.map

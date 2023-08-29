@@ -555,7 +555,7 @@ function createRandom (defaultSeed) {
 
 module.exports = createRandom();
 
-},{"defined":5,"seed-random":38,"simplex-noise":39}],4:[function(require,module,exports){
+},{"defined":5,"seed-random":6,"simplex-noise":7}],4:[function(require,module,exports){
 (function (global){(function (){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -2726,272 +2726,6 @@ module.exports = function defined() {
 };
 
 },{}],6:[function(require,module,exports){
-function backInOut(t) {
-  var s = 1.70158 * 1.525
-  if ((t *= 2) < 1)
-    return 0.5 * (t * t * ((s + 1) * t - s))
-  return 0.5 * ((t -= 2) * t * ((s + 1) * t + s) + 2)
-}
-
-module.exports = backInOut
-},{}],7:[function(require,module,exports){
-function backIn(t) {
-  var s = 1.70158
-  return t * t * ((s + 1) * t - s)
-}
-
-module.exports = backIn
-},{}],8:[function(require,module,exports){
-function backOut(t) {
-  var s = 1.70158
-  return --t * t * ((s + 1) * t + s) + 1
-}
-
-module.exports = backOut
-},{}],9:[function(require,module,exports){
-var bounceOut = require('./bounce-out')
-
-function bounceInOut(t) {
-  return t < 0.5
-    ? 0.5 * (1.0 - bounceOut(1.0 - t * 2.0))
-    : 0.5 * bounceOut(t * 2.0 - 1.0) + 0.5
-}
-
-module.exports = bounceInOut
-},{"./bounce-out":11}],10:[function(require,module,exports){
-var bounceOut = require('./bounce-out')
-
-function bounceIn(t) {
-  return 1.0 - bounceOut(1.0 - t)
-}
-
-module.exports = bounceIn
-},{"./bounce-out":11}],11:[function(require,module,exports){
-function bounceOut(t) {
-  var a = 4.0 / 11.0
-  var b = 8.0 / 11.0
-  var c = 9.0 / 10.0
-
-  var ca = 4356.0 / 361.0
-  var cb = 35442.0 / 1805.0
-  var cc = 16061.0 / 1805.0
-
-  var t2 = t * t
-
-  return t < a
-    ? 7.5625 * t2
-    : t < b
-      ? 9.075 * t2 - 9.9 * t + 3.4
-      : t < c
-        ? ca * t2 - cb * t + cc
-        : 10.8 * t * t - 20.52 * t + 10.72
-}
-
-module.exports = bounceOut
-},{}],12:[function(require,module,exports){
-function circInOut(t) {
-  if ((t *= 2) < 1) return -0.5 * (Math.sqrt(1 - t * t) - 1)
-  return 0.5 * (Math.sqrt(1 - (t -= 2) * t) + 1)
-}
-
-module.exports = circInOut
-},{}],13:[function(require,module,exports){
-function circIn(t) {
-  return 1.0 - Math.sqrt(1.0 - t * t)
-}
-
-module.exports = circIn
-},{}],14:[function(require,module,exports){
-function circOut(t) {
-  return Math.sqrt(1 - ( --t * t ))
-}
-
-module.exports = circOut
-},{}],15:[function(require,module,exports){
-function cubicInOut(t) {
-  return t < 0.5
-    ? 4.0 * t * t * t
-    : 0.5 * Math.pow(2.0 * t - 2.0, 3.0) + 1.0
-}
-
-module.exports = cubicInOut
-},{}],16:[function(require,module,exports){
-function cubicIn(t) {
-  return t * t * t
-}
-
-module.exports = cubicIn
-},{}],17:[function(require,module,exports){
-function cubicOut(t) {
-  var f = t - 1.0
-  return f * f * f + 1.0
-}
-
-module.exports = cubicOut
-},{}],18:[function(require,module,exports){
-function elasticInOut(t) {
-  return t < 0.5
-    ? 0.5 * Math.sin(+13.0 * Math.PI/2 * 2.0 * t) * Math.pow(2.0, 10.0 * (2.0 * t - 1.0))
-    : 0.5 * Math.sin(-13.0 * Math.PI/2 * ((2.0 * t - 1.0) + 1.0)) * Math.pow(2.0, -10.0 * (2.0 * t - 1.0)) + 1.0
-}
-
-module.exports = elasticInOut
-},{}],19:[function(require,module,exports){
-function elasticIn(t) {
-  return Math.sin(13.0 * t * Math.PI/2) * Math.pow(2.0, 10.0 * (t - 1.0))
-}
-
-module.exports = elasticIn
-},{}],20:[function(require,module,exports){
-function elasticOut(t) {
-  return Math.sin(-13.0 * (t + 1.0) * Math.PI/2) * Math.pow(2.0, -10.0 * t) + 1.0
-}
-
-module.exports = elasticOut
-},{}],21:[function(require,module,exports){
-function expoInOut(t) {
-  return (t === 0.0 || t === 1.0)
-    ? t
-    : t < 0.5
-      ? +0.5 * Math.pow(2.0, (20.0 * t) - 10.0)
-      : -0.5 * Math.pow(2.0, 10.0 - (t * 20.0)) + 1.0
-}
-
-module.exports = expoInOut
-},{}],22:[function(require,module,exports){
-function expoIn(t) {
-  return t === 0.0 ? t : Math.pow(2.0, 10.0 * (t - 1.0))
-}
-
-module.exports = expoIn
-},{}],23:[function(require,module,exports){
-function expoOut(t) {
-  return t === 1.0 ? t : 1.0 - Math.pow(2.0, -10.0 * t)
-}
-
-module.exports = expoOut
-},{}],24:[function(require,module,exports){
-module.exports = {
-	'backInOut': require('./back-in-out'),
-	'backIn': require('./back-in'),
-	'backOut': require('./back-out'),
-	'bounceInOut': require('./bounce-in-out'),
-	'bounceIn': require('./bounce-in'),
-	'bounceOut': require('./bounce-out'),
-	'circInOut': require('./circ-in-out'),
-	'circIn': require('./circ-in'),
-	'circOut': require('./circ-out'),
-	'cubicInOut': require('./cubic-in-out'),
-	'cubicIn': require('./cubic-in'),
-	'cubicOut': require('./cubic-out'),
-	'elasticInOut': require('./elastic-in-out'),
-	'elasticIn': require('./elastic-in'),
-	'elasticOut': require('./elastic-out'),
-	'expoInOut': require('./expo-in-out'),
-	'expoIn': require('./expo-in'),
-	'expoOut': require('./expo-out'),
-	'linear': require('./linear'),
-	'quadInOut': require('./quad-in-out'),
-	'quadIn': require('./quad-in'),
-	'quadOut': require('./quad-out'),
-	'quartInOut': require('./quart-in-out'),
-	'quartIn': require('./quart-in'),
-	'quartOut': require('./quart-out'),
-	'quintInOut': require('./quint-in-out'),
-	'quintIn': require('./quint-in'),
-	'quintOut': require('./quint-out'),
-	'sineInOut': require('./sine-in-out'),
-	'sineIn': require('./sine-in'),
-	'sineOut': require('./sine-out')
-}
-},{"./back-in":7,"./back-in-out":6,"./back-out":8,"./bounce-in":10,"./bounce-in-out":9,"./bounce-out":11,"./circ-in":13,"./circ-in-out":12,"./circ-out":14,"./cubic-in":16,"./cubic-in-out":15,"./cubic-out":17,"./elastic-in":19,"./elastic-in-out":18,"./elastic-out":20,"./expo-in":22,"./expo-in-out":21,"./expo-out":23,"./linear":25,"./quad-in":27,"./quad-in-out":26,"./quad-out":28,"./quart-in":30,"./quart-in-out":29,"./quart-out":31,"./quint-in":33,"./quint-in-out":32,"./quint-out":34,"./sine-in":36,"./sine-in-out":35,"./sine-out":37}],25:[function(require,module,exports){
-function linear(t) {
-  return t
-}
-
-module.exports = linear
-},{}],26:[function(require,module,exports){
-function quadInOut(t) {
-    t /= 0.5
-    if (t < 1) return 0.5*t*t
-    t--
-    return -0.5 * (t*(t-2) - 1)
-}
-
-module.exports = quadInOut
-},{}],27:[function(require,module,exports){
-function quadIn(t) {
-  return t * t
-}
-
-module.exports = quadIn
-},{}],28:[function(require,module,exports){
-function quadOut(t) {
-  return -t * (t - 2.0)
-}
-
-module.exports = quadOut
-},{}],29:[function(require,module,exports){
-function quarticInOut(t) {
-  return t < 0.5
-    ? +8.0 * Math.pow(t, 4.0)
-    : -8.0 * Math.pow(t - 1.0, 4.0) + 1.0
-}
-
-module.exports = quarticInOut
-},{}],30:[function(require,module,exports){
-function quarticIn(t) {
-  return Math.pow(t, 4.0)
-}
-
-module.exports = quarticIn
-},{}],31:[function(require,module,exports){
-function quarticOut(t) {
-  return Math.pow(t - 1.0, 3.0) * (1.0 - t) + 1.0
-}
-
-module.exports = quarticOut
-},{}],32:[function(require,module,exports){
-function qinticInOut(t) {
-    if ( ( t *= 2 ) < 1 ) return 0.5 * t * t * t * t * t
-    return 0.5 * ( ( t -= 2 ) * t * t * t * t + 2 )
-}
-
-module.exports = qinticInOut
-},{}],33:[function(require,module,exports){
-function qinticIn(t) {
-  return t * t * t * t * t
-}
-
-module.exports = qinticIn
-},{}],34:[function(require,module,exports){
-function qinticOut(t) {
-  return --t * t * t * t * t + 1
-}
-
-module.exports = qinticOut
-},{}],35:[function(require,module,exports){
-function sineInOut(t) {
-  return -0.5 * (Math.cos(Math.PI*t) - 1)
-}
-
-module.exports = sineInOut
-},{}],36:[function(require,module,exports){
-function sineIn (t) {
-  var v = Math.cos(t * Math.PI * 0.5)
-  if (Math.abs(v) < 1e-14) return 1
-  else return 1 - v
-}
-
-module.exports = sineIn
-
-},{}],37:[function(require,module,exports){
-function sineOut(t) {
-  return Math.sin(t * Math.PI/2)
-}
-
-module.exports = sineOut
-},{}],38:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -3169,7 +2903,7 @@ mixkey(Math.random(), pool);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],39:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*
  * A fast javascript implementation of simplex noise by Jonas Wagner
 
@@ -3644,149 +3378,129 @@ Better rank ordering method by Stefan Gustavson in 2012.
 
 })();
 
-},{}],40:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 const canvasSketch = require('canvas-sketch');
 const math = require('canvas-sketch-util/math');
-const eases = require('eases');
 const random = require('canvas-sketch-util/random');
+
 
 const settings = {
   dimensions: [ 1080, 1080 ],
   animate: true,
 };
 
-let audio;
-let audioContext, audioData, sourceNode, analyserNode;
-let manager;
-let minDb, maxDb;
+// const animate = () => {
+//   console.log('animate');
+//   requestAnimationFrame(animate);
+// };
 
-const sketch = () => {
-  const numCircles = 5;
-  const numSlices = 9;
-  const slice = Math.PI * 2 / numSlices;
-  const radius = 200;
+// animate();
 
-  const bins = []
-  const lineWidths = [];
+const sketch = ({ context, width, height }) => {
+  const agents = [];
 
-  let lineWidth, bin, mapped;
-
-  for (let i = 0; i < numCircles * numSlices; i++) {
-    bin = random.rangeFloor(4, 100);
-    if (random.value() < 0.5) bin = 0;
-    bins.push(bin);
+  for (let i = 0; i < 60; i++) {
+    const x = random.range(0, width);
+    const y = random.range(0, height);
+    agents.push(new Agent(x, y));
   }
 
-  for (let i = 0; i < numCircles; i++) {
-    const t = i / (numCircles - 1);
-    lineWidth = eases.quadIn(t) * 200 + 20;
-    lineWidths.push(lineWidth);
-  }
-  
   return ({ context, width, height }) => {
-    context.fillStyle = '#EEEAE0';
+    context.fillStyle = 'black';
     context.fillRect(0, 0, width, height);
 
-    if(!audioContext) return;
-    
-    analyserNode.getFloatFrequencyData(audioData);
+    context.fillStyle = 'black';
 
-    context.save();
-    context.translate(width * 0.5, height * 0.5);
+    for (let i = 0; i < agents.length; i++) {
+      const agent = agents[i];
 
-    let cradius = radius;
+      for (let j = i + 1; j < agents.length; j++) {
+        const other = agents[j];
 
-    for (let i = 0 ; i < numCircles; i++) {
-      context.save();
-      
-      for (let j = 0; j < numSlices; j++) {
-        context.rotate(slice);
-        context.lineWidth = lineWidths[i];
+        const dist = agent.pos.getDistance(other.pos);
 
-        bin = bins[i * numSlices + j];
-        if (!bin) continue;
+        if (dist > 200) continue;
 
-        mapped = math.mapRange(audioData[bin], minDb, maxDb, 0, 1, true);
-    
-        lineWidth = lineWidths[i] * mapped;
-        if (lineWidth < 1) continue;
-        
-        context.lineWidth = lineWidth;
+        context.lineWidth = math.mapRange(dist, 0, 200, 12, 1);
+        context.strokeStyle = 'white';
 
         context.beginPath();
-        context.arc(0, 0, cradius + context.lineWidth * 0.5, 0, slice);
+        context.moveTo(agent.pos.x, agent.pos.y);
+        context.lineTo(other.pos.x, other.pos.y);
         context.stroke();
       }
-
-      cradius += lineWidths[i];
-
-      context.restore();
     }
 
-    context.restore();
+    agents.forEach(
+      agent => {
+        agent.update();
+        agent.draw(context);
+        agent.wrap(width, height);
+    });
+
   };
 };
 
-const addListeners = () => {
-  window.addEventListener('mouseup', () => {
-    if (!audioContext) createAudio();
+canvasSketch(sketch, settings);
 
-    if (audio.paused) {
-      audio.play();
-      manager.play();
-    } else {
-      audio.pause();
-      manager.pause();
-    }
-  })
-};
-
-const createAudio = () => {
-  audio = document.createElement('audio');
-  audio.src = './public/audio/big-city-lights.mp3';
-
-  audioContext = new AudioContext();
-  
-  sourceNode = audioContext.createMediaElementSource(audio);
-  sourceNode.connect(audioContext.destination);
-
-  analyserNode = audioContext.createAnalyser();
-  analyserNode.fftSize = 512;
-  analyserNode.smoothingTimeConstant = 0.9;
-  sourceNode.connect(analyserNode);
-
-  minDb = analyserNode.minDecibels;
-  maxDb = analyserNode.maxDecibels;
-
-  audioData = new Float32Array(analyserNode.frequencyBinCount);
-
-  // console.log(audioData.length);
-};
-
-const getAverage = data => {
-  let sum = 0;
-
-  for (let i = 0; i < data.length; i++) {
-    sum += data[i];
+class Vector {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
   }
 
-  return sum / data.length;
+  getDistance(other) {
+    const dx = this.x - other.x;
+    const dy = this.y - other.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
 }
 
-const start = async () => {
-  addListeners();
-  manager = await canvasSketch(sketch, settings);
-  manager.pause();
-};
+class Agent {
+  constructor(x, y) {
+    this.pos = new Vector(x,y);
+    this.vel = new Vector(random.range(-1,1), random.range(-1,1));
+    this.radius = random.range(4, 12);
+  }
 
-start();
-},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3,"eases":24}],41:[function(require,module,exports){
+  wrap(width, height) {
+    if(this.pos.x < 0) this.pos.x += width;
+    if(this.pos.x > width) this.pos.x -= width;
+    if(this.pos.y < 0) this.pos.y += height;
+    if(this.pos.y > height) this.pos.y -= height;
+  }
+
+  bounce(width, height) {
+    if(this.pos.x <= 0 || this.pos.x >= width) this.vel.x *= -1;
+    if(this.pos.y <= 0 || this.pos.y >= height) this.vel.y *= -1;
+  }
+
+  update() {
+    this.pos.x += this.vel.x;
+    this.pos.y += this.vel.y;
+  }
+
+  draw(context) {
+    context.save();
+    context.translate(this.pos.x, this.pos.y);
+
+    context.beginPath();
+    context.arc(0, 0, this.radius, 0, Math.PI * 2);
+    context.fill();
+    context.lineWidth = 3;
+    context.strokeStyle = 'white';
+    context.stroke();
+
+    context.restore();
+  }
+}
+},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3}],9:[function(require,module,exports){
 (function (global){(function (){
 
 global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}]},{},[40,41])
+},{}]},{},[8,9])
 
-//# sourceMappingURL=sketch--09.js.map
+//# sourceMappingURL=sketch-03.js.map

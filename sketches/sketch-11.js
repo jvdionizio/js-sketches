@@ -1,4 +1,561 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+module.exports = wrap;
+function wrap (value, from, to) {
+  if (typeof from !== 'number' || typeof to !== 'number') {
+    throw new TypeError('Must specify "to" and "from" arguments as numbers');
+  }
+  // algorithm from http://stackoverflow.com/a/5852628/599884
+  if (from > to) {
+    var t = from;
+    from = to;
+    to = t;
+  }
+  var cycle = to - from;
+  if (cycle === 0) {
+    return to;
+  }
+  return value - cycle * Math.floor((value - from) / cycle);
+}
+
+},{}],2:[function(require,module,exports){
+var defined = require('defined');
+var wrap = require('./lib/wrap');
+var EPSILON = Number.EPSILON;
+
+function clamp (value, min, max) {
+  return min < max
+    ? (value < min ? min : value > max ? max : value)
+    : (value < max ? max : value > min ? min : value);
+}
+
+function clamp01 (v) {
+  return clamp(v, 0, 1);
+}
+
+function lerp (min, max, t) {
+  return min * (1 - t) + max * t;
+}
+
+function inverseLerp (min, max, t) {
+  if (Math.abs(min - max) < EPSILON) return 0;
+  else return (t - min) / (max - min);
+}
+
+function smoothstep (min, max, t) {
+  var x = clamp(inverseLerp(min, max, t), 0, 1);
+  return x * x * (3 - 2 * x);
+}
+
+function toFinite (n, defaultValue) {
+  defaultValue = defined(defaultValue, 0);
+  return typeof n === 'number' && isFinite(n) ? n : defaultValue;
+}
+
+function expandVector (dims) {
+  if (typeof dims !== 'number') throw new TypeError('Expected dims argument');
+  return function (p, defaultValue) {
+    defaultValue = defined(defaultValue, 0);
+    var scalar;
+    if (p == null) {
+      // No vector, create a default one
+      scalar = defaultValue;
+    } else if (typeof p === 'number' && isFinite(p)) {
+      // Expand single channel to multiple vector
+      scalar = p;
+    }
+
+    var out = [];
+    var i;
+    if (scalar == null) {
+      for (i = 0; i < dims; i++) {
+        out[i] = toFinite(p[i], defaultValue);
+      }
+    } else {
+      for (i = 0; i < dims; i++) {
+        out[i] = scalar;
+      }
+    }
+    return out;
+  };
+}
+
+function lerpArray (min, max, t, out) {
+  out = out || [];
+  if (min.length !== max.length) {
+    throw new TypeError('min and max array are expected to have the same length');
+  }
+  for (var i = 0; i < min.length; i++) {
+    out[i] = lerp(min[i], max[i], t);
+  }
+  return out;
+}
+
+function newArray (n, initialValue) {
+  n = defined(n, 0);
+  if (typeof n !== 'number') throw new TypeError('Expected n argument to be a number');
+  var out = [];
+  for (var i = 0; i < n; i++) out.push(initialValue);
+  return out;
+}
+
+function linspace (n, opts) {
+  n = defined(n, 0);
+  if (typeof n !== 'number') throw new TypeError('Expected n argument to be a number');
+  opts = opts || {};
+  if (typeof opts === 'boolean') {
+    opts = { endpoint: true };
+  }
+  var offset = defined(opts.offset, 0);
+  if (opts.endpoint) {
+    return newArray(n).map(function (_, i) {
+      return n <= 1 ? 0 : ((i + offset) / (n - 1));
+    });
+  } else {
+    return newArray(n).map(function (_, i) {
+      return (i + offset) / n;
+    });
+  }
+}
+
+function lerpFrames (values, t, out) {
+  t = clamp(t, 0, 1);
+
+  var len = values.length - 1;
+  var whole = t * len;
+  var frame = Math.floor(whole);
+  var fract = whole - frame;
+
+  var nextFrame = Math.min(frame + 1, len);
+  var a = values[frame % values.length];
+  var b = values[nextFrame % values.length];
+  if (typeof a === 'number' && typeof b === 'number') {
+    return lerp(a, b, fract);
+  } else if (Array.isArray(a) && Array.isArray(b)) {
+    return lerpArray(a, b, fract, out);
+  } else {
+    throw new TypeError('Mismatch in value type of two array elements: ' + frame + ' and ' + nextFrame);
+  }
+}
+
+function mod (a, b) {
+  return ((a % b) + b) % b;
+}
+
+function degToRad (n) {
+  return n * Math.PI / 180;
+}
+
+function radToDeg (n) {
+  return n * 180 / Math.PI;
+}
+
+function fract (n) {
+  return n - Math.floor(n);
+}
+
+function sign (n) {
+  if (n > 0) return 1;
+  else if (n < 0) return -1;
+  else return 0;
+}
+
+// Specific function from Unity / ofMath, not sure its needed?
+// function lerpWrap (a, b, t, min, max) {
+//   return wrap(a + wrap(b - a, min, max) * t, min, max)
+// }
+
+function pingPong (t, length) {
+  t = mod(t, length * 2);
+  return length - Math.abs(t - length);
+}
+
+function damp (a, b, lambda, dt) {
+  return lerp(a, b, 1 - Math.exp(-lambda * dt));
+}
+
+function dampArray (a, b, lambda, dt, out) {
+  out = out || [];
+  for (var i = 0; i < a.length; i++) {
+    out[i] = damp(a[i], b[i], lambda, dt);
+  }
+  return out;
+}
+
+function mapRange (value, inputMin, inputMax, outputMin, outputMax, clamp) {
+  // Reference:
+  // https://openframeworks.cc/documentation/math/ofMath/
+  if (Math.abs(inputMin - inputMax) < EPSILON) {
+    return outputMin;
+  } else {
+    var outVal = ((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin);
+    if (clamp) {
+      if (outputMax < outputMin) {
+        if (outVal < outputMax) outVal = outputMax;
+        else if (outVal > outputMin) outVal = outputMin;
+      } else {
+        if (outVal > outputMax) outVal = outputMax;
+        else if (outVal < outputMin) outVal = outputMin;
+      }
+    }
+    return outVal;
+  }
+}
+
+module.exports = {
+  mod: mod,
+  fract: fract,
+  sign: sign,
+  degToRad: degToRad,
+  radToDeg: radToDeg,
+  wrap: wrap,
+  pingPong: pingPong,
+  linspace: linspace,
+  lerp: lerp,
+  lerpArray: lerpArray,
+  inverseLerp: inverseLerp,
+  lerpFrames: lerpFrames,
+  clamp: clamp,
+  clamp01: clamp01,
+  smoothstep: smoothstep,
+  damp: damp,
+  dampArray: dampArray,
+  mapRange: mapRange,
+  expand2D: expandVector(2),
+  expand3D: expandVector(3),
+  expand4D: expandVector(4)
+};
+
+},{"./lib/wrap":1,"defined":7}],3:[function(require,module,exports){
+var seedRandom = require('seed-random');
+var SimplexNoise = require('simplex-noise');
+var defined = require('defined');
+
+function createRandom (defaultSeed) {
+  defaultSeed = defined(defaultSeed, null);
+  var defaultRandom = Math.random;
+  var currentSeed;
+  var currentRandom;
+  var noiseGenerator;
+  var _nextGaussian = null;
+  var _hasNextGaussian = false;
+
+  setSeed(defaultSeed);
+
+  return {
+    value: value,
+    createRandom: function (defaultSeed) {
+      return createRandom(defaultSeed);
+    },
+    setSeed: setSeed,
+    getSeed: getSeed,
+    getRandomSeed: getRandomSeed,
+    valueNonZero: valueNonZero,
+    permuteNoise: permuteNoise,
+    noise1D: noise1D,
+    noise2D: noise2D,
+    noise3D: noise3D,
+    noise4D: noise4D,
+    sign: sign,
+    boolean: boolean,
+    chance: chance,
+    range: range,
+    rangeFloor: rangeFloor,
+    pick: pick,
+    shuffle: shuffle,
+    onCircle: onCircle,
+    insideCircle: insideCircle,
+    onSphere: onSphere,
+    insideSphere: insideSphere,
+    quaternion: quaternion,
+    weighted: weighted,
+    weightedSet: weightedSet,
+    weightedSetIndex: weightedSetIndex,
+    gaussian: gaussian
+  };
+
+  function setSeed (seed, opt) {
+    if (typeof seed === 'number' || typeof seed === 'string') {
+      currentSeed = seed;
+      currentRandom = seedRandom(currentSeed, opt);
+    } else {
+      currentSeed = undefined;
+      currentRandom = defaultRandom;
+    }
+    noiseGenerator = createNoise();
+    _nextGaussian = null;
+    _hasNextGaussian = false;
+  }
+
+  function value () {
+    return currentRandom();
+  }
+
+  function valueNonZero () {
+    var u = 0;
+    while (u === 0) u = value();
+    return u;
+  }
+
+  function getSeed () {
+    return currentSeed;
+  }
+
+  function getRandomSeed () {
+    var seed = String(Math.floor(Math.random() * 1000000));
+    return seed;
+  }
+
+  function createNoise () {
+    return new SimplexNoise(currentRandom);
+  }
+
+  function permuteNoise () {
+    noiseGenerator = createNoise();
+  }
+
+  function noise1D (x, frequency, amplitude) {
+    if (!isFinite(x)) throw new TypeError('x component for noise() must be finite');
+    frequency = defined(frequency, 1);
+    amplitude = defined(amplitude, 1);
+    return amplitude * noiseGenerator.noise2D(x * frequency, 0);
+  }
+
+  function noise2D (x, y, frequency, amplitude) {
+    if (!isFinite(x)) throw new TypeError('x component for noise() must be finite');
+    if (!isFinite(y)) throw new TypeError('y component for noise() must be finite');
+    frequency = defined(frequency, 1);
+    amplitude = defined(amplitude, 1);
+    return amplitude * noiseGenerator.noise2D(x * frequency, y * frequency);
+  }
+
+  function noise3D (x, y, z, frequency, amplitude) {
+    if (!isFinite(x)) throw new TypeError('x component for noise() must be finite');
+    if (!isFinite(y)) throw new TypeError('y component for noise() must be finite');
+    if (!isFinite(z)) throw new TypeError('z component for noise() must be finite');
+    frequency = defined(frequency, 1);
+    amplitude = defined(amplitude, 1);
+    return amplitude * noiseGenerator.noise3D(
+      x * frequency,
+      y * frequency,
+      z * frequency
+    );
+  }
+
+  function noise4D (x, y, z, w, frequency, amplitude) {
+    if (!isFinite(x)) throw new TypeError('x component for noise() must be finite');
+    if (!isFinite(y)) throw new TypeError('y component for noise() must be finite');
+    if (!isFinite(z)) throw new TypeError('z component for noise() must be finite');
+    if (!isFinite(w)) throw new TypeError('w component for noise() must be finite');
+    frequency = defined(frequency, 1);
+    amplitude = defined(amplitude, 1);
+    return amplitude * noiseGenerator.noise4D(
+      x * frequency,
+      y * frequency,
+      z * frequency,
+      w * frequency
+    );
+  }
+
+  function sign () {
+    return boolean() ? 1 : -1;
+  }
+
+  function boolean () {
+    return value() > 0.5;
+  }
+
+  function chance (n) {
+    n = defined(n, 0.5);
+    if (typeof n !== 'number') throw new TypeError('expected n to be a number');
+    return value() < n;
+  }
+
+  function range (min, max) {
+    if (max === undefined) {
+      max = min;
+      min = 0;
+    }
+
+    if (typeof min !== 'number' || typeof max !== 'number') {
+      throw new TypeError('Expected all arguments to be numbers');
+    }
+
+    return value() * (max - min) + min;
+  }
+
+  function rangeFloor (min, max) {
+    if (max === undefined) {
+      max = min;
+      min = 0;
+    }
+
+    if (typeof min !== 'number' || typeof max !== 'number') {
+      throw new TypeError('Expected all arguments to be numbers');
+    }
+
+    return Math.floor(range(min, max));
+  }
+
+  function pick (array) {
+    if (array.length === 0) return undefined;
+    return array[rangeFloor(0, array.length)];
+  }
+
+  function shuffle (arr) {
+    if (!Array.isArray(arr)) {
+      throw new TypeError('Expected Array, got ' + typeof arr);
+    }
+
+    var rand;
+    var tmp;
+    var len = arr.length;
+    var ret = arr.slice();
+    while (len) {
+      rand = Math.floor(value() * len--);
+      tmp = ret[len];
+      ret[len] = ret[rand];
+      ret[rand] = tmp;
+    }
+    return ret;
+  }
+
+  function onCircle (radius, out) {
+    radius = defined(radius, 1);
+    out = out || [];
+    var theta = value() * 2.0 * Math.PI;
+    out[0] = radius * Math.cos(theta);
+    out[1] = radius * Math.sin(theta);
+    return out;
+  }
+
+  function insideCircle (radius, out) {
+    radius = defined(radius, 1);
+    out = out || [];
+    onCircle(1, out);
+    var r = radius * Math.sqrt(value());
+    out[0] *= r;
+    out[1] *= r;
+    return out;
+  }
+
+  function onSphere (radius, out) {
+    radius = defined(radius, 1);
+    out = out || [];
+    var u = value() * Math.PI * 2;
+    var v = value() * 2 - 1;
+    var phi = u;
+    var theta = Math.acos(v);
+    out[0] = radius * Math.sin(theta) * Math.cos(phi);
+    out[1] = radius * Math.sin(theta) * Math.sin(phi);
+    out[2] = radius * Math.cos(theta);
+    return out;
+  }
+
+  function insideSphere (radius, out) {
+    radius = defined(radius, 1);
+    out = out || [];
+    var u = value() * Math.PI * 2;
+    var v = value() * 2 - 1;
+    var k = value();
+
+    var phi = u;
+    var theta = Math.acos(v);
+    var r = radius * Math.cbrt(k);
+    out[0] = r * Math.sin(theta) * Math.cos(phi);
+    out[1] = r * Math.sin(theta) * Math.sin(phi);
+    out[2] = r * Math.cos(theta);
+    return out;
+  }
+
+  function quaternion (out) {
+    out = out || [];
+    var u1 = value();
+    var u2 = value();
+    var u3 = value();
+
+    var sq1 = Math.sqrt(1 - u1);
+    var sq2 = Math.sqrt(u1);
+
+    var theta1 = Math.PI * 2 * u2;
+    var theta2 = Math.PI * 2 * u3;
+
+    var x = Math.sin(theta1) * sq1;
+    var y = Math.cos(theta1) * sq1;
+    var z = Math.sin(theta2) * sq2;
+    var w = Math.cos(theta2) * sq2;
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = w;
+    return out;
+  }
+
+  function weightedSet (set) {
+    set = set || [];
+    if (set.length === 0) return null;
+    return set[weightedSetIndex(set)].value;
+  }
+
+  function weightedSetIndex (set) {
+    set = set || [];
+    if (set.length === 0) return -1;
+    return weighted(set.map(function (s) {
+      return s.weight;
+    }));
+  }
+
+  function weighted (weights) {
+    weights = weights || [];
+    if (weights.length === 0) return -1;
+    var totalWeight = 0;
+    var i;
+
+    for (i = 0; i < weights.length; i++) {
+      totalWeight += weights[i];
+    }
+
+    if (totalWeight <= 0) throw new Error('Weights must sum to > 0');
+
+    var random = value() * totalWeight;
+    for (i = 0; i < weights.length; i++) {
+      if (random < weights[i]) {
+        return i;
+      }
+      random -= weights[i];
+    }
+    return 0;
+  }
+
+  function gaussian (mean, standardDerivation) {
+    mean = defined(mean, 0);
+    standardDerivation = defined(standardDerivation, 1);
+
+    // https://github.com/openjdk-mirror/jdk7u-jdk/blob/f4d80957e89a19a29bb9f9807d2a28351ed7f7df/src/share/classes/java/util/Random.java#L496
+    if (_hasNextGaussian) {
+      _hasNextGaussian = false;
+      var result = _nextGaussian;
+      _nextGaussian = null;
+      return mean + standardDerivation * result;
+    } else {
+      var v1 = 0;
+      var v2 = 0;
+      var s = 0;
+      do {
+        v1 = value() * 2 - 1; // between -1 and 1
+        v2 = value() * 2 - 1; // between -1 and 1
+        s = v1 * v1 + v2 * v2;
+      } while (s >= 1 || s === 0);
+      var multiplier = Math.sqrt(-2 * Math.log(s) / s);
+      _nextGaussian = (v2 * multiplier);
+      _hasNextGaussian = true;
+      return mean + standardDerivation * (v1 * multiplier);
+    }
+  }
+}
+
+module.exports = createRandom();
+
+},{"defined":7,"seed-random":41,"simplex-noise":42}],4:[function(require,module,exports){
 (function (global){(function (){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -2157,58 +2714,1363 @@
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],2:[function(require,module,exports){
-const canvasSketch = require('canvas-sketch');
+},{}],5:[function(require,module,exports){
+module.exports={
+	"jet":[{"index":0,"rgb":[0,0,131]},{"index":0.125,"rgb":[0,60,170]},{"index":0.375,"rgb":[5,255,255]},{"index":0.625,"rgb":[255,255,0]},{"index":0.875,"rgb":[250,0,0]},{"index":1,"rgb":[128,0,0]}],
 
-const settings = {
-  dimensions: [ 1080, 1080 ]
+	"hsv":[{"index":0,"rgb":[255,0,0]},{"index":0.169,"rgb":[253,255,2]},{"index":0.173,"rgb":[247,255,2]},{"index":0.337,"rgb":[0,252,4]},{"index":0.341,"rgb":[0,252,10]},{"index":0.506,"rgb":[1,249,255]},{"index":0.671,"rgb":[2,0,253]},{"index":0.675,"rgb":[8,0,253]},{"index":0.839,"rgb":[255,0,251]},{"index":0.843,"rgb":[255,0,245]},{"index":1,"rgb":[255,0,6]}],
+
+	"hot":[{"index":0,"rgb":[0,0,0]},{"index":0.3,"rgb":[230,0,0]},{"index":0.6,"rgb":[255,210,0]},{"index":1,"rgb":[255,255,255]}],
+
+	"spring":[{"index":0,"rgb":[255,0,255]},{"index":1,"rgb":[255,255,0]}],
+
+	"summer":[{"index":0,"rgb":[0,128,102]},{"index":1,"rgb":[255,255,102]}],
+
+	"autumn":[{"index":0,"rgb":[255,0,0]},{"index":1,"rgb":[255,255,0]}],
+
+	"winter":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[0,255,128]}],
+
+	"bone":[{"index":0,"rgb":[0,0,0]},{"index":0.376,"rgb":[84,84,116]},{"index":0.753,"rgb":[169,200,200]},{"index":1,"rgb":[255,255,255]}],
+
+	"copper":[{"index":0,"rgb":[0,0,0]},{"index":0.804,"rgb":[255,160,102]},{"index":1,"rgb":[255,199,127]}],
+
+	"greys":[{"index":0,"rgb":[0,0,0]},{"index":1,"rgb":[255,255,255]}],
+
+	"yignbu":[{"index":0,"rgb":[8,29,88]},{"index":0.125,"rgb":[37,52,148]},{"index":0.25,"rgb":[34,94,168]},{"index":0.375,"rgb":[29,145,192]},{"index":0.5,"rgb":[65,182,196]},{"index":0.625,"rgb":[127,205,187]},{"index":0.75,"rgb":[199,233,180]},{"index":0.875,"rgb":[237,248,217]},{"index":1,"rgb":[255,255,217]}],
+
+	"greens":[{"index":0,"rgb":[0,68,27]},{"index":0.125,"rgb":[0,109,44]},{"index":0.25,"rgb":[35,139,69]},{"index":0.375,"rgb":[65,171,93]},{"index":0.5,"rgb":[116,196,118]},{"index":0.625,"rgb":[161,217,155]},{"index":0.75,"rgb":[199,233,192]},{"index":0.875,"rgb":[229,245,224]},{"index":1,"rgb":[247,252,245]}],
+
+	"yiorrd":[{"index":0,"rgb":[128,0,38]},{"index":0.125,"rgb":[189,0,38]},{"index":0.25,"rgb":[227,26,28]},{"index":0.375,"rgb":[252,78,42]},{"index":0.5,"rgb":[253,141,60]},{"index":0.625,"rgb":[254,178,76]},{"index":0.75,"rgb":[254,217,118]},{"index":0.875,"rgb":[255,237,160]},{"index":1,"rgb":[255,255,204]}],
+
+	"bluered":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[255,0,0]}],
+
+	"rdbu":[{"index":0,"rgb":[5,10,172]},{"index":0.35,"rgb":[106,137,247]},{"index":0.5,"rgb":[190,190,190]},{"index":0.6,"rgb":[220,170,132]},{"index":0.7,"rgb":[230,145,90]},{"index":1,"rgb":[178,10,28]}],
+
+	"picnic":[{"index":0,"rgb":[0,0,255]},{"index":0.1,"rgb":[51,153,255]},{"index":0.2,"rgb":[102,204,255]},{"index":0.3,"rgb":[153,204,255]},{"index":0.4,"rgb":[204,204,255]},{"index":0.5,"rgb":[255,255,255]},{"index":0.6,"rgb":[255,204,255]},{"index":0.7,"rgb":[255,153,255]},{"index":0.8,"rgb":[255,102,204]},{"index":0.9,"rgb":[255,102,102]},{"index":1,"rgb":[255,0,0]}],
+
+	"rainbow":[{"index":0,"rgb":[150,0,90]},{"index":0.125,"rgb":[0,0,200]},{"index":0.25,"rgb":[0,25,255]},{"index":0.375,"rgb":[0,152,255]},{"index":0.5,"rgb":[44,255,150]},{"index":0.625,"rgb":[151,255,0]},{"index":0.75,"rgb":[255,234,0]},{"index":0.875,"rgb":[255,111,0]},{"index":1,"rgb":[255,0,0]}],
+
+	"portland":[{"index":0,"rgb":[12,51,131]},{"index":0.25,"rgb":[10,136,186]},{"index":0.5,"rgb":[242,211,56]},{"index":0.75,"rgb":[242,143,56]},{"index":1,"rgb":[217,30,30]}],
+
+	"blackbody":[{"index":0,"rgb":[0,0,0]},{"index":0.2,"rgb":[230,0,0]},{"index":0.4,"rgb":[230,210,0]},{"index":0.7,"rgb":[255,255,255]},{"index":1,"rgb":[160,200,255]}],
+
+	"earth":[{"index":0,"rgb":[0,0,130]},{"index":0.1,"rgb":[0,180,180]},{"index":0.2,"rgb":[40,210,40]},{"index":0.4,"rgb":[230,230,50]},{"index":0.6,"rgb":[120,70,20]},{"index":1,"rgb":[255,255,255]}],
+
+	"electric":[{"index":0,"rgb":[0,0,0]},{"index":0.15,"rgb":[30,0,100]},{"index":0.4,"rgb":[120,0,100]},{"index":0.6,"rgb":[160,90,0]},{"index":0.8,"rgb":[230,200,0]},{"index":1,"rgb":[255,250,220]}],
+
+	"alpha": [{"index":0, "rgb": [255,255,255,0]},{"index":1, "rgb": [255,255,255,1]}],
+
+	"viridis": [{"index":0,"rgb":[68,1,84]},{"index":0.13,"rgb":[71,44,122]},{"index":0.25,"rgb":[59,81,139]},{"index":0.38,"rgb":[44,113,142]},{"index":0.5,"rgb":[33,144,141]},{"index":0.63,"rgb":[39,173,129]},{"index":0.75,"rgb":[92,200,99]},{"index":0.88,"rgb":[170,220,50]},{"index":1,"rgb":[253,231,37]}],
+
+	"inferno": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[31,12,72]},{"index":0.25,"rgb":[85,15,109]},{"index":0.38,"rgb":[136,34,106]},{"index":0.5,"rgb":[186,54,85]},{"index":0.63,"rgb":[227,89,51]},{"index":0.75,"rgb":[249,140,10]},{"index":0.88,"rgb":[249,201,50]},{"index":1,"rgb":[252,255,164]}],
+
+	"magma": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[28,16,68]},{"index":0.25,"rgb":[79,18,123]},{"index":0.38,"rgb":[129,37,129]},{"index":0.5,"rgb":[181,54,122]},{"index":0.63,"rgb":[229,80,100]},{"index":0.75,"rgb":[251,135,97]},{"index":0.88,"rgb":[254,194,135]},{"index":1,"rgb":[252,253,191]}],
+
+	"plasma": [{"index":0,"rgb":[13,8,135]},{"index":0.13,"rgb":[75,3,161]},{"index":0.25,"rgb":[125,3,168]},{"index":0.38,"rgb":[168,34,150]},{"index":0.5,"rgb":[203,70,121]},{"index":0.63,"rgb":[229,107,93]},{"index":0.75,"rgb":[248,148,65]},{"index":0.88,"rgb":[253,195,40]},{"index":1,"rgb":[240,249,33]}],
+
+	"warm": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[172,0,187]},{"index":0.25,"rgb":[219,0,170]},{"index":0.38,"rgb":[255,0,130]},{"index":0.5,"rgb":[255,63,74]},{"index":0.63,"rgb":[255,123,0]},{"index":0.75,"rgb":[234,176,0]},{"index":0.88,"rgb":[190,228,0]},{"index":1,"rgb":[147,255,0]}],
+
+	"cool": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[116,0,218]},{"index":0.25,"rgb":[98,74,237]},{"index":0.38,"rgb":[68,146,231]},{"index":0.5,"rgb":[0,204,197]},{"index":0.63,"rgb":[0,247,146]},{"index":0.75,"rgb":[0,255,88]},{"index":0.88,"rgb":[40,255,8]},{"index":1,"rgb":[147,255,0]}],
+
+	"rainbow-soft": [{"index":0,"rgb":[125,0,179]},{"index":0.1,"rgb":[199,0,180]},{"index":0.2,"rgb":[255,0,121]},{"index":0.3,"rgb":[255,108,0]},{"index":0.4,"rgb":[222,194,0]},{"index":0.5,"rgb":[150,255,0]},{"index":0.6,"rgb":[0,255,55]},{"index":0.7,"rgb":[0,246,150]},{"index":0.8,"rgb":[50,167,222]},{"index":0.9,"rgb":[103,51,235]},{"index":1,"rgb":[124,0,186]}],
+
+	"bathymetry": [{"index":0,"rgb":[40,26,44]},{"index":0.13,"rgb":[59,49,90]},{"index":0.25,"rgb":[64,76,139]},{"index":0.38,"rgb":[63,110,151]},{"index":0.5,"rgb":[72,142,158]},{"index":0.63,"rgb":[85,174,163]},{"index":0.75,"rgb":[120,206,163]},{"index":0.88,"rgb":[187,230,172]},{"index":1,"rgb":[253,254,204]}],
+
+	"cdom": [{"index":0,"rgb":[47,15,62]},{"index":0.13,"rgb":[87,23,86]},{"index":0.25,"rgb":[130,28,99]},{"index":0.38,"rgb":[171,41,96]},{"index":0.5,"rgb":[206,67,86]},{"index":0.63,"rgb":[230,106,84]},{"index":0.75,"rgb":[242,149,103]},{"index":0.88,"rgb":[249,193,135]},{"index":1,"rgb":[254,237,176]}],
+
+	"chlorophyll": [{"index":0,"rgb":[18,36,20]},{"index":0.13,"rgb":[25,63,41]},{"index":0.25,"rgb":[24,91,59]},{"index":0.38,"rgb":[13,119,72]},{"index":0.5,"rgb":[18,148,80]},{"index":0.63,"rgb":[80,173,89]},{"index":0.75,"rgb":[132,196,122]},{"index":0.88,"rgb":[175,221,162]},{"index":1,"rgb":[215,249,208]}],
+
+	"density": [{"index":0,"rgb":[54,14,36]},{"index":0.13,"rgb":[89,23,80]},{"index":0.25,"rgb":[110,45,132]},{"index":0.38,"rgb":[120,77,178]},{"index":0.5,"rgb":[120,113,213]},{"index":0.63,"rgb":[115,151,228]},{"index":0.75,"rgb":[134,185,227]},{"index":0.88,"rgb":[177,214,227]},{"index":1,"rgb":[230,241,241]}],
+
+	"freesurface-blue": [{"index":0,"rgb":[30,4,110]},{"index":0.13,"rgb":[47,14,176]},{"index":0.25,"rgb":[41,45,236]},{"index":0.38,"rgb":[25,99,212]},{"index":0.5,"rgb":[68,131,200]},{"index":0.63,"rgb":[114,156,197]},{"index":0.75,"rgb":[157,181,203]},{"index":0.88,"rgb":[200,208,216]},{"index":1,"rgb":[241,237,236]}],
+
+	"freesurface-red": [{"index":0,"rgb":[60,9,18]},{"index":0.13,"rgb":[100,17,27]},{"index":0.25,"rgb":[142,20,29]},{"index":0.38,"rgb":[177,43,27]},{"index":0.5,"rgb":[192,87,63]},{"index":0.63,"rgb":[205,125,105]},{"index":0.75,"rgb":[216,162,148]},{"index":0.88,"rgb":[227,199,193]},{"index":1,"rgb":[241,237,236]}],
+
+	"oxygen": [{"index":0,"rgb":[64,5,5]},{"index":0.13,"rgb":[106,6,15]},{"index":0.25,"rgb":[144,26,7]},{"index":0.38,"rgb":[168,64,3]},{"index":0.5,"rgb":[188,100,4]},{"index":0.63,"rgb":[206,136,11]},{"index":0.75,"rgb":[220,174,25]},{"index":0.88,"rgb":[231,215,44]},{"index":1,"rgb":[248,254,105]}],
+
+	"par": [{"index":0,"rgb":[51,20,24]},{"index":0.13,"rgb":[90,32,35]},{"index":0.25,"rgb":[129,44,34]},{"index":0.38,"rgb":[159,68,25]},{"index":0.5,"rgb":[182,99,19]},{"index":0.63,"rgb":[199,134,22]},{"index":0.75,"rgb":[212,171,35]},{"index":0.88,"rgb":[221,210,54]},{"index":1,"rgb":[225,253,75]}],
+
+	"phase": [{"index":0,"rgb":[145,105,18]},{"index":0.13,"rgb":[184,71,38]},{"index":0.25,"rgb":[186,58,115]},{"index":0.38,"rgb":[160,71,185]},{"index":0.5,"rgb":[110,97,218]},{"index":0.63,"rgb":[50,123,164]},{"index":0.75,"rgb":[31,131,110]},{"index":0.88,"rgb":[77,129,34]},{"index":1,"rgb":[145,105,18]}],
+
+	"salinity": [{"index":0,"rgb":[42,24,108]},{"index":0.13,"rgb":[33,50,162]},{"index":0.25,"rgb":[15,90,145]},{"index":0.38,"rgb":[40,118,137]},{"index":0.5,"rgb":[59,146,135]},{"index":0.63,"rgb":[79,175,126]},{"index":0.75,"rgb":[120,203,104]},{"index":0.88,"rgb":[193,221,100]},{"index":1,"rgb":[253,239,154]}],
+
+	"temperature": [{"index":0,"rgb":[4,35,51]},{"index":0.13,"rgb":[23,51,122]},{"index":0.25,"rgb":[85,59,157]},{"index":0.38,"rgb":[129,79,143]},{"index":0.5,"rgb":[175,95,130]},{"index":0.63,"rgb":[222,112,101]},{"index":0.75,"rgb":[249,146,66]},{"index":0.88,"rgb":[249,196,65]},{"index":1,"rgb":[232,250,91]}],
+
+	"turbidity": [{"index":0,"rgb":[34,31,27]},{"index":0.13,"rgb":[65,50,41]},{"index":0.25,"rgb":[98,69,52]},{"index":0.38,"rgb":[131,89,57]},{"index":0.5,"rgb":[161,112,59]},{"index":0.63,"rgb":[185,140,66]},{"index":0.75,"rgb":[202,174,88]},{"index":0.88,"rgb":[216,209,126]},{"index":1,"rgb":[233,246,171]}],
+
+	"velocity-blue": [{"index":0,"rgb":[17,32,64]},{"index":0.13,"rgb":[35,52,116]},{"index":0.25,"rgb":[29,81,156]},{"index":0.38,"rgb":[31,113,162]},{"index":0.5,"rgb":[50,144,169]},{"index":0.63,"rgb":[87,173,176]},{"index":0.75,"rgb":[149,196,189]},{"index":0.88,"rgb":[203,221,211]},{"index":1,"rgb":[254,251,230]}],
+
+	"velocity-green": [{"index":0,"rgb":[23,35,19]},{"index":0.13,"rgb":[24,64,38]},{"index":0.25,"rgb":[11,95,45]},{"index":0.38,"rgb":[39,123,35]},{"index":0.5,"rgb":[95,146,12]},{"index":0.63,"rgb":[152,165,18]},{"index":0.75,"rgb":[201,186,69]},{"index":0.88,"rgb":[233,216,137]},{"index":1,"rgb":[255,253,205]}],
+
+	"cubehelix": [{"index":0,"rgb":[0,0,0]},{"index":0.07,"rgb":[22,5,59]},{"index":0.13,"rgb":[60,4,105]},{"index":0.2,"rgb":[109,1,135]},{"index":0.27,"rgb":[161,0,147]},{"index":0.33,"rgb":[210,2,142]},{"index":0.4,"rgb":[251,11,123]},{"index":0.47,"rgb":[255,29,97]},{"index":0.53,"rgb":[255,54,69]},{"index":0.6,"rgb":[255,85,46]},{"index":0.67,"rgb":[255,120,34]},{"index":0.73,"rgb":[255,157,37]},{"index":0.8,"rgb":[241,191,57]},{"index":0.87,"rgb":[224,220,93]},{"index":0.93,"rgb":[218,241,142]},{"index":1,"rgb":[227,253,198]}]
 };
 
-const sketch = () => {
+},{}],6:[function(require,module,exports){
+/*
+ * Ben Postlethwaite
+ * January 2013
+ * License MIT
+ */
+'use strict';
+
+var colorScale = require('./colorScale');
+var lerp = require('lerp')
+
+module.exports = createColormap;
+
+function createColormap (spec) {
+    /*
+     * Default Options
+     */
+    var indicies, fromrgba, torgba,
+        nsteps, cmap, colormap, format,
+        nshades, colors, alpha, i;
+
+    if ( !spec ) spec = {};
+
+    nshades = (spec.nshades || 72) - 1;
+    format = spec.format || 'hex';
+
+    colormap = spec.colormap;
+    if (!colormap) colormap = 'jet';
+
+    if (typeof colormap === 'string') {
+        colormap = colormap.toLowerCase();
+
+        if (!colorScale[colormap]) {
+            throw Error(colormap + ' not a supported colorscale');
+        }
+
+        cmap = colorScale[colormap];
+
+    } else if (Array.isArray(colormap)) {
+        cmap = colormap.slice();
+
+    } else {
+        throw Error('unsupported colormap option', colormap);
+    }
+
+    if (cmap.length > nshades + 1) {
+        throw new Error(
+            colormap+' map requires nshades to be at least size '+cmap.length
+        );
+    }
+
+    if (!Array.isArray(spec.alpha)) {
+
+        if (typeof spec.alpha === 'number') {
+            alpha = [spec.alpha, spec.alpha];
+
+        } else {
+            alpha = [1, 1];
+        }
+
+    } else if (spec.alpha.length !== 2) {
+        alpha = [1, 1];
+
+    } else {
+        alpha = spec.alpha.slice();
+    }
+
+    // map index points from 0..1 to 0..n-1
+    indicies = cmap.map(function(c) {
+        return Math.round(c.index * nshades);
+    });
+
+    // Add alpha channel to the map
+    alpha[0] = Math.min(Math.max(alpha[0], 0), 1);
+    alpha[1] = Math.min(Math.max(alpha[1], 0), 1);
+
+    var steps = cmap.map(function(c, i) {
+        var index = cmap[i].index
+
+        var rgba = cmap[i].rgb.slice();
+
+        // if user supplies their own map use it
+        if (rgba.length === 4 && rgba[3] >= 0 && rgba[3] <= 1) {
+            return rgba
+        }
+        rgba[3] = alpha[0] + (alpha[1] - alpha[0])*index;
+
+        return rgba
+    })
+
+
+    /*
+     * map increasing linear values between indicies to
+     * linear steps in colorvalues
+     */
+    var colors = []
+    for (i = 0; i < indicies.length-1; ++i) {
+        nsteps = indicies[i+1] - indicies[i];
+        fromrgba = steps[i];
+        torgba = steps[i+1];
+
+        for (var j = 0; j < nsteps; j++) {
+            var amt = j / nsteps
+            colors.push([
+                Math.round(lerp(fromrgba[0], torgba[0], amt)),
+                Math.round(lerp(fromrgba[1], torgba[1], amt)),
+                Math.round(lerp(fromrgba[2], torgba[2], amt)),
+                lerp(fromrgba[3], torgba[3], amt)
+            ])
+        }
+    }
+
+    //add 1 step as last value
+    colors.push(cmap[cmap.length - 1].rgb.concat(alpha[1]))
+
+    if (format === 'hex') colors = colors.map( rgb2hex );
+    else if (format === 'rgbaString') colors = colors.map( rgbaStr );
+    else if (format === 'float') colors = colors.map( rgb2float );
+
+    return colors;
+};
+
+function rgb2float (rgba) {
+    return [
+        rgba[0] / 255,
+        rgba[1] / 255,
+        rgba[2] / 255,
+        rgba[3]
+    ]
+}
+
+function rgb2hex (rgba) {
+    var dig, hex = '#';
+    for (var i = 0; i < 3; ++i) {
+        dig = rgba[i];
+        dig = dig.toString(16);
+        hex += ('00' + dig).substr( dig.length );
+    }
+    return hex;
+}
+
+function rgbaStr (rgba) {
+    return 'rgba(' + rgba.join(',') + ')';
+}
+
+},{"./colorScale":5,"lerp":40}],7:[function(require,module,exports){
+'use strict';
+
+module.exports = function defined() {
+	for (var i = 0; i < arguments.length; i++) {
+		if (typeof arguments[i] !== 'undefined') {
+			return arguments[i];
+		}
+	}
+};
+
+},{}],8:[function(require,module,exports){
+function backInOut(t) {
+  var s = 1.70158 * 1.525
+  if ((t *= 2) < 1)
+    return 0.5 * (t * t * ((s + 1) * t - s))
+  return 0.5 * ((t -= 2) * t * ((s + 1) * t + s) + 2)
+}
+
+module.exports = backInOut
+},{}],9:[function(require,module,exports){
+function backIn(t) {
+  var s = 1.70158
+  return t * t * ((s + 1) * t - s)
+}
+
+module.exports = backIn
+},{}],10:[function(require,module,exports){
+function backOut(t) {
+  var s = 1.70158
+  return --t * t * ((s + 1) * t + s) + 1
+}
+
+module.exports = backOut
+},{}],11:[function(require,module,exports){
+var bounceOut = require('./bounce-out')
+
+function bounceInOut(t) {
+  return t < 0.5
+    ? 0.5 * (1.0 - bounceOut(1.0 - t * 2.0))
+    : 0.5 * bounceOut(t * 2.0 - 1.0) + 0.5
+}
+
+module.exports = bounceInOut
+},{"./bounce-out":13}],12:[function(require,module,exports){
+var bounceOut = require('./bounce-out')
+
+function bounceIn(t) {
+  return 1.0 - bounceOut(1.0 - t)
+}
+
+module.exports = bounceIn
+},{"./bounce-out":13}],13:[function(require,module,exports){
+function bounceOut(t) {
+  var a = 4.0 / 11.0
+  var b = 8.0 / 11.0
+  var c = 9.0 / 10.0
+
+  var ca = 4356.0 / 361.0
+  var cb = 35442.0 / 1805.0
+  var cc = 16061.0 / 1805.0
+
+  var t2 = t * t
+
+  return t < a
+    ? 7.5625 * t2
+    : t < b
+      ? 9.075 * t2 - 9.9 * t + 3.4
+      : t < c
+        ? ca * t2 - cb * t + cc
+        : 10.8 * t * t - 20.52 * t + 10.72
+}
+
+module.exports = bounceOut
+},{}],14:[function(require,module,exports){
+function circInOut(t) {
+  if ((t *= 2) < 1) return -0.5 * (Math.sqrt(1 - t * t) - 1)
+  return 0.5 * (Math.sqrt(1 - (t -= 2) * t) + 1)
+}
+
+module.exports = circInOut
+},{}],15:[function(require,module,exports){
+function circIn(t) {
+  return 1.0 - Math.sqrt(1.0 - t * t)
+}
+
+module.exports = circIn
+},{}],16:[function(require,module,exports){
+function circOut(t) {
+  return Math.sqrt(1 - ( --t * t ))
+}
+
+module.exports = circOut
+},{}],17:[function(require,module,exports){
+function cubicInOut(t) {
+  return t < 0.5
+    ? 4.0 * t * t * t
+    : 0.5 * Math.pow(2.0 * t - 2.0, 3.0) + 1.0
+}
+
+module.exports = cubicInOut
+},{}],18:[function(require,module,exports){
+function cubicIn(t) {
+  return t * t * t
+}
+
+module.exports = cubicIn
+},{}],19:[function(require,module,exports){
+function cubicOut(t) {
+  var f = t - 1.0
+  return f * f * f + 1.0
+}
+
+module.exports = cubicOut
+},{}],20:[function(require,module,exports){
+function elasticInOut(t) {
+  return t < 0.5
+    ? 0.5 * Math.sin(+13.0 * Math.PI/2 * 2.0 * t) * Math.pow(2.0, 10.0 * (2.0 * t - 1.0))
+    : 0.5 * Math.sin(-13.0 * Math.PI/2 * ((2.0 * t - 1.0) + 1.0)) * Math.pow(2.0, -10.0 * (2.0 * t - 1.0)) + 1.0
+}
+
+module.exports = elasticInOut
+},{}],21:[function(require,module,exports){
+function elasticIn(t) {
+  return Math.sin(13.0 * t * Math.PI/2) * Math.pow(2.0, 10.0 * (t - 1.0))
+}
+
+module.exports = elasticIn
+},{}],22:[function(require,module,exports){
+function elasticOut(t) {
+  return Math.sin(-13.0 * (t + 1.0) * Math.PI/2) * Math.pow(2.0, -10.0 * t) + 1.0
+}
+
+module.exports = elasticOut
+},{}],23:[function(require,module,exports){
+function expoInOut(t) {
+  return (t === 0.0 || t === 1.0)
+    ? t
+    : t < 0.5
+      ? +0.5 * Math.pow(2.0, (20.0 * t) - 10.0)
+      : -0.5 * Math.pow(2.0, 10.0 - (t * 20.0)) + 1.0
+}
+
+module.exports = expoInOut
+},{}],24:[function(require,module,exports){
+function expoIn(t) {
+  return t === 0.0 ? t : Math.pow(2.0, 10.0 * (t - 1.0))
+}
+
+module.exports = expoIn
+},{}],25:[function(require,module,exports){
+function expoOut(t) {
+  return t === 1.0 ? t : 1.0 - Math.pow(2.0, -10.0 * t)
+}
+
+module.exports = expoOut
+},{}],26:[function(require,module,exports){
+module.exports = {
+	'backInOut': require('./back-in-out'),
+	'backIn': require('./back-in'),
+	'backOut': require('./back-out'),
+	'bounceInOut': require('./bounce-in-out'),
+	'bounceIn': require('./bounce-in'),
+	'bounceOut': require('./bounce-out'),
+	'circInOut': require('./circ-in-out'),
+	'circIn': require('./circ-in'),
+	'circOut': require('./circ-out'),
+	'cubicInOut': require('./cubic-in-out'),
+	'cubicIn': require('./cubic-in'),
+	'cubicOut': require('./cubic-out'),
+	'elasticInOut': require('./elastic-in-out'),
+	'elasticIn': require('./elastic-in'),
+	'elasticOut': require('./elastic-out'),
+	'expoInOut': require('./expo-in-out'),
+	'expoIn': require('./expo-in'),
+	'expoOut': require('./expo-out'),
+	'linear': require('./linear'),
+	'quadInOut': require('./quad-in-out'),
+	'quadIn': require('./quad-in'),
+	'quadOut': require('./quad-out'),
+	'quartInOut': require('./quart-in-out'),
+	'quartIn': require('./quart-in'),
+	'quartOut': require('./quart-out'),
+	'quintInOut': require('./quint-in-out'),
+	'quintIn': require('./quint-in'),
+	'quintOut': require('./quint-out'),
+	'sineInOut': require('./sine-in-out'),
+	'sineIn': require('./sine-in'),
+	'sineOut': require('./sine-out')
+}
+},{"./back-in":9,"./back-in-out":8,"./back-out":10,"./bounce-in":12,"./bounce-in-out":11,"./bounce-out":13,"./circ-in":15,"./circ-in-out":14,"./circ-out":16,"./cubic-in":18,"./cubic-in-out":17,"./cubic-out":19,"./elastic-in":21,"./elastic-in-out":20,"./elastic-out":22,"./expo-in":24,"./expo-in-out":23,"./expo-out":25,"./linear":27,"./quad-in":29,"./quad-in-out":28,"./quad-out":30,"./quart-in":32,"./quart-in-out":31,"./quart-out":33,"./quint-in":35,"./quint-in-out":34,"./quint-out":36,"./sine-in":38,"./sine-in-out":37,"./sine-out":39}],27:[function(require,module,exports){
+function linear(t) {
+  return t
+}
+
+module.exports = linear
+},{}],28:[function(require,module,exports){
+function quadInOut(t) {
+    t /= 0.5
+    if (t < 1) return 0.5*t*t
+    t--
+    return -0.5 * (t*(t-2) - 1)
+}
+
+module.exports = quadInOut
+},{}],29:[function(require,module,exports){
+function quadIn(t) {
+  return t * t
+}
+
+module.exports = quadIn
+},{}],30:[function(require,module,exports){
+function quadOut(t) {
+  return -t * (t - 2.0)
+}
+
+module.exports = quadOut
+},{}],31:[function(require,module,exports){
+function quarticInOut(t) {
+  return t < 0.5
+    ? +8.0 * Math.pow(t, 4.0)
+    : -8.0 * Math.pow(t - 1.0, 4.0) + 1.0
+}
+
+module.exports = quarticInOut
+},{}],32:[function(require,module,exports){
+function quarticIn(t) {
+  return Math.pow(t, 4.0)
+}
+
+module.exports = quarticIn
+},{}],33:[function(require,module,exports){
+function quarticOut(t) {
+  return Math.pow(t - 1.0, 3.0) * (1.0 - t) + 1.0
+}
+
+module.exports = quarticOut
+},{}],34:[function(require,module,exports){
+function qinticInOut(t) {
+    if ( ( t *= 2 ) < 1 ) return 0.5 * t * t * t * t * t
+    return 0.5 * ( ( t -= 2 ) * t * t * t * t + 2 )
+}
+
+module.exports = qinticInOut
+},{}],35:[function(require,module,exports){
+function qinticIn(t) {
+  return t * t * t * t * t
+}
+
+module.exports = qinticIn
+},{}],36:[function(require,module,exports){
+function qinticOut(t) {
+  return --t * t * t * t * t + 1
+}
+
+module.exports = qinticOut
+},{}],37:[function(require,module,exports){
+function sineInOut(t) {
+  return -0.5 * (Math.cos(Math.PI*t) - 1)
+}
+
+module.exports = sineInOut
+},{}],38:[function(require,module,exports){
+function sineIn (t) {
+  var v = Math.cos(t * Math.PI * 0.5)
+  if (Math.abs(v) < 1e-14) return 1
+  else return 1 - v
+}
+
+module.exports = sineIn
+
+},{}],39:[function(require,module,exports){
+function sineOut(t) {
+  return Math.sin(t * Math.PI/2)
+}
+
+module.exports = sineOut
+},{}],40:[function(require,module,exports){
+function lerp(v0, v1, t) {
+    return v0*(1-t)+v1*t
+}
+module.exports = lerp
+},{}],41:[function(require,module,exports){
+(function (global){(function (){
+'use strict';
+
+var width = 256;// each RC4 output is 0 <= x < 256
+var chunks = 6;// at least six RC4 outputs for each double
+var digits = 52;// there are 52 significant digits in a double
+var pool = [];// pool: entropy pool starts empty
+var GLOBAL = typeof global === 'undefined' ? window : global;
+
+//
+// The following constants are related to IEEE 754 limits.
+//
+var startdenom = Math.pow(width, chunks),
+    significance = Math.pow(2, digits),
+    overflow = significance * 2,
+    mask = width - 1;
+
+
+var oldRandom = Math.random;
+
+//
+// seedrandom()
+// This is the seedrandom function described above.
+//
+module.exports = function(seed, options) {
+  if (options && options.global === true) {
+    options.global = false;
+    Math.random = module.exports(seed, options);
+    options.global = true;
+    return Math.random;
+  }
+  var use_entropy = (options && options.entropy) || false;
+  var key = [];
+
+  // Flatten the seed string or build one from local entropy if needed.
+  var shortseed = mixkey(flatten(
+    use_entropy ? [seed, tostring(pool)] :
+    0 in arguments ? seed : autoseed(), 3), key);
+
+  // Use the seed to initialize an ARC4 generator.
+  var arc4 = new ARC4(key);
+
+  // Mix the randomness into accumulated entropy.
+  mixkey(tostring(arc4.S), pool);
+
+  // Override Math.random
+
+  // This function returns a random double in [0, 1) that contains
+  // randomness in every bit of the mantissa of the IEEE 754 value.
+
+  return function() {         // Closure to return a random double:
+    var n = arc4.g(chunks),             // Start with a numerator n < 2 ^ 48
+        d = startdenom,                 //   and denominator d = 2 ^ 48.
+        x = 0;                          //   and no 'extra last byte'.
+    while (n < significance) {          // Fill up all significant digits by
+      n = (n + x) * width;              //   shifting numerator and
+      d *= width;                       //   denominator and generating a
+      x = arc4.g(1);                    //   new least-significant-byte.
+    }
+    while (n >= overflow) {             // To avoid rounding up, before adding
+      n /= 2;                           //   last byte, shift everything
+      d /= 2;                           //   right using integer Math until
+      x >>>= 1;                         //   we have exactly the desired bits.
+    }
+    return (n + x) / d;                 // Form the number within [0, 1).
+  };
+};
+
+module.exports.resetGlobal = function () {
+  Math.random = oldRandom;
+};
+
+//
+// ARC4
+//
+// An ARC4 implementation.  The constructor takes a key in the form of
+// an array of at most (width) integers that should be 0 <= x < (width).
+//
+// The g(count) method returns a pseudorandom integer that concatenates
+// the next (count) outputs from ARC4.  Its return value is a number x
+// that is in the range 0 <= x < (width ^ count).
+//
+/** @constructor */
+function ARC4(key) {
+  var t, keylen = key.length,
+      me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
+
+  // The empty key [] is treated as [0].
+  if (!keylen) { key = [keylen++]; }
+
+  // Set up S using the standard key scheduling algorithm.
+  while (i < width) {
+    s[i] = i++;
+  }
+  for (i = 0; i < width; i++) {
+    s[i] = s[j = mask & (j + key[i % keylen] + (t = s[i]))];
+    s[j] = t;
+  }
+
+  // The "g" method returns the next (count) outputs as one number.
+  (me.g = function(count) {
+    // Using instance members instead of closure state nearly doubles speed.
+    var t, r = 0,
+        i = me.i, j = me.j, s = me.S;
+    while (count--) {
+      t = s[i = mask & (i + 1)];
+      r = r * width + s[mask & ((s[i] = s[j = mask & (j + t)]) + (s[j] = t))];
+    }
+    me.i = i; me.j = j;
+    return r;
+    // For robust unpredictability discard an initial batch of values.
+    // See http://www.rsa.com/rsalabs/node.asp?id=2009
+  })(width);
+}
+
+//
+// flatten()
+// Converts an object tree to nested arrays of strings.
+//
+function flatten(obj, depth) {
+  var result = [], typ = (typeof obj)[0], prop;
+  if (depth && typ == 'o') {
+    for (prop in obj) {
+      try { result.push(flatten(obj[prop], depth - 1)); } catch (e) {}
+    }
+  }
+  return (result.length ? result : typ == 's' ? obj : obj + '\0');
+}
+
+//
+// mixkey()
+// Mixes a string seed into a key that is an array of integers, and
+// returns a shortened string seed that is equivalent to the result key.
+//
+function mixkey(seed, key) {
+  var stringseed = seed + '', smear, j = 0;
+  while (j < stringseed.length) {
+    key[mask & j] =
+      mask & ((smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++));
+  }
+  return tostring(key);
+}
+
+//
+// autoseed()
+// Returns an object for autoseeding, using window.crypto if available.
+//
+/** @param {Uint8Array=} seed */
+function autoseed(seed) {
+  try {
+    GLOBAL.crypto.getRandomValues(seed = new Uint8Array(width));
+    return tostring(seed);
+  } catch (e) {
+    return [+new Date, GLOBAL, GLOBAL.navigator && GLOBAL.navigator.plugins,
+            GLOBAL.screen, tostring(pool)];
+  }
+}
+
+//
+// tostring()
+// Converts an array of charcodes to a string
+//
+function tostring(a) {
+  return String.fromCharCode.apply(0, a);
+}
+
+//
+// When seedrandom.js is loaded, we immediately mix a few bits
+// from the built-in RNG into the entropy pool.  Because we do
+// not want to intefere with determinstic PRNG state later,
+// seedrandom will not call Math.random on its own again after
+// initialization.
+//
+mixkey(Math.random(), pool);
+
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+
+},{}],42:[function(require,module,exports){
+/*
+ * A fast javascript implementation of simplex noise by Jonas Wagner
+
+Based on a speed-improved simplex noise algorithm for 2D, 3D and 4D in Java.
+Which is based on example code by Stefan Gustavson (stegu@itn.liu.se).
+With Optimisations by Peter Eastman (peastman@drizzle.stanford.edu).
+Better rank ordering method by Stefan Gustavson in 2012.
+
+
+ Copyright (c) 2018 Jonas Wagner
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+ */
+(function() {
+  'use strict';
+
+  var F2 = 0.5 * (Math.sqrt(3.0) - 1.0);
+  var G2 = (3.0 - Math.sqrt(3.0)) / 6.0;
+  var F3 = 1.0 / 3.0;
+  var G3 = 1.0 / 6.0;
+  var F4 = (Math.sqrt(5.0) - 1.0) / 4.0;
+  var G4 = (5.0 - Math.sqrt(5.0)) / 20.0;
+
+  function SimplexNoise(randomOrSeed) {
+    var random;
+    if (typeof randomOrSeed == 'function') {
+      random = randomOrSeed;
+    }
+    else if (randomOrSeed) {
+      random = alea(randomOrSeed);
+    } else {
+      random = Math.random;
+    }
+    this.p = buildPermutationTable(random);
+    this.perm = new Uint8Array(512);
+    this.permMod12 = new Uint8Array(512);
+    for (var i = 0; i < 512; i++) {
+      this.perm[i] = this.p[i & 255];
+      this.permMod12[i] = this.perm[i] % 12;
+    }
+
+  }
+  SimplexNoise.prototype = {
+    grad3: new Float32Array([1, 1, 0,
+      -1, 1, 0,
+      1, -1, 0,
+
+      -1, -1, 0,
+      1, 0, 1,
+      -1, 0, 1,
+
+      1, 0, -1,
+      -1, 0, -1,
+      0, 1, 1,
+
+      0, -1, 1,
+      0, 1, -1,
+      0, -1, -1]),
+    grad4: new Float32Array([0, 1, 1, 1, 0, 1, 1, -1, 0, 1, -1, 1, 0, 1, -1, -1,
+      0, -1, 1, 1, 0, -1, 1, -1, 0, -1, -1, 1, 0, -1, -1, -1,
+      1, 0, 1, 1, 1, 0, 1, -1, 1, 0, -1, 1, 1, 0, -1, -1,
+      -1, 0, 1, 1, -1, 0, 1, -1, -1, 0, -1, 1, -1, 0, -1, -1,
+      1, 1, 0, 1, 1, 1, 0, -1, 1, -1, 0, 1, 1, -1, 0, -1,
+      -1, 1, 0, 1, -1, 1, 0, -1, -1, -1, 0, 1, -1, -1, 0, -1,
+      1, 1, 1, 0, 1, 1, -1, 0, 1, -1, 1, 0, 1, -1, -1, 0,
+      -1, 1, 1, 0, -1, 1, -1, 0, -1, -1, 1, 0, -1, -1, -1, 0]),
+    noise2D: function(xin, yin) {
+      var permMod12 = this.permMod12;
+      var perm = this.perm;
+      var grad3 = this.grad3;
+      var n0 = 0; // Noise contributions from the three corners
+      var n1 = 0;
+      var n2 = 0;
+      // Skew the input space to determine which simplex cell we're in
+      var s = (xin + yin) * F2; // Hairy factor for 2D
+      var i = Math.floor(xin + s);
+      var j = Math.floor(yin + s);
+      var t = (i + j) * G2;
+      var X0 = i - t; // Unskew the cell origin back to (x,y) space
+      var Y0 = j - t;
+      var x0 = xin - X0; // The x,y distances from the cell origin
+      var y0 = yin - Y0;
+      // For the 2D case, the simplex shape is an equilateral triangle.
+      // Determine which simplex we are in.
+      var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
+      if (x0 > y0) {
+        i1 = 1;
+        j1 = 0;
+      } // lower triangle, XY order: (0,0)->(1,0)->(1,1)
+      else {
+        i1 = 0;
+        j1 = 1;
+      } // upper triangle, YX order: (0,0)->(0,1)->(1,1)
+      // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
+      // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
+      // c = (3-sqrt(3))/6
+      var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+      var y1 = y0 - j1 + G2;
+      var x2 = x0 - 1.0 + 2.0 * G2; // Offsets for last corner in (x,y) unskewed coords
+      var y2 = y0 - 1.0 + 2.0 * G2;
+      // Work out the hashed gradient indices of the three simplex corners
+      var ii = i & 255;
+      var jj = j & 255;
+      // Calculate the contribution from the three corners
+      var t0 = 0.5 - x0 * x0 - y0 * y0;
+      if (t0 >= 0) {
+        var gi0 = permMod12[ii + perm[jj]] * 3;
+        t0 *= t0;
+        n0 = t0 * t0 * (grad3[gi0] * x0 + grad3[gi0 + 1] * y0); // (x,y) of grad3 used for 2D gradient
+      }
+      var t1 = 0.5 - x1 * x1 - y1 * y1;
+      if (t1 >= 0) {
+        var gi1 = permMod12[ii + i1 + perm[jj + j1]] * 3;
+        t1 *= t1;
+        n1 = t1 * t1 * (grad3[gi1] * x1 + grad3[gi1 + 1] * y1);
+      }
+      var t2 = 0.5 - x2 * x2 - y2 * y2;
+      if (t2 >= 0) {
+        var gi2 = permMod12[ii + 1 + perm[jj + 1]] * 3;
+        t2 *= t2;
+        n2 = t2 * t2 * (grad3[gi2] * x2 + grad3[gi2 + 1] * y2);
+      }
+      // Add contributions from each corner to get the final noise value.
+      // The result is scaled to return values in the interval [-1,1].
+      return 70.0 * (n0 + n1 + n2);
+    },
+    // 3D simplex noise
+    noise3D: function(xin, yin, zin) {
+      var permMod12 = this.permMod12;
+      var perm = this.perm;
+      var grad3 = this.grad3;
+      var n0, n1, n2, n3; // Noise contributions from the four corners
+      // Skew the input space to determine which simplex cell we're in
+      var s = (xin + yin + zin) * F3; // Very nice and simple skew factor for 3D
+      var i = Math.floor(xin + s);
+      var j = Math.floor(yin + s);
+      var k = Math.floor(zin + s);
+      var t = (i + j + k) * G3;
+      var X0 = i - t; // Unskew the cell origin back to (x,y,z) space
+      var Y0 = j - t;
+      var Z0 = k - t;
+      var x0 = xin - X0; // The x,y,z distances from the cell origin
+      var y0 = yin - Y0;
+      var z0 = zin - Z0;
+      // For the 3D case, the simplex shape is a slightly irregular tetrahedron.
+      // Determine which simplex we are in.
+      var i1, j1, k1; // Offsets for second corner of simplex in (i,j,k) coords
+      var i2, j2, k2; // Offsets for third corner of simplex in (i,j,k) coords
+      if (x0 >= y0) {
+        if (y0 >= z0) {
+          i1 = 1;
+          j1 = 0;
+          k1 = 0;
+          i2 = 1;
+          j2 = 1;
+          k2 = 0;
+        } // X Y Z order
+        else if (x0 >= z0) {
+          i1 = 1;
+          j1 = 0;
+          k1 = 0;
+          i2 = 1;
+          j2 = 0;
+          k2 = 1;
+        } // X Z Y order
+        else {
+          i1 = 0;
+          j1 = 0;
+          k1 = 1;
+          i2 = 1;
+          j2 = 0;
+          k2 = 1;
+        } // Z X Y order
+      }
+      else { // x0<y0
+        if (y0 < z0) {
+          i1 = 0;
+          j1 = 0;
+          k1 = 1;
+          i2 = 0;
+          j2 = 1;
+          k2 = 1;
+        } // Z Y X order
+        else if (x0 < z0) {
+          i1 = 0;
+          j1 = 1;
+          k1 = 0;
+          i2 = 0;
+          j2 = 1;
+          k2 = 1;
+        } // Y Z X order
+        else {
+          i1 = 0;
+          j1 = 1;
+          k1 = 0;
+          i2 = 1;
+          j2 = 1;
+          k2 = 0;
+        } // Y X Z order
+      }
+      // A step of (1,0,0) in (i,j,k) means a step of (1-c,-c,-c) in (x,y,z),
+      // a step of (0,1,0) in (i,j,k) means a step of (-c,1-c,-c) in (x,y,z), and
+      // a step of (0,0,1) in (i,j,k) means a step of (-c,-c,1-c) in (x,y,z), where
+      // c = 1/6.
+      var x1 = x0 - i1 + G3; // Offsets for second corner in (x,y,z) coords
+      var y1 = y0 - j1 + G3;
+      var z1 = z0 - k1 + G3;
+      var x2 = x0 - i2 + 2.0 * G3; // Offsets for third corner in (x,y,z) coords
+      var y2 = y0 - j2 + 2.0 * G3;
+      var z2 = z0 - k2 + 2.0 * G3;
+      var x3 = x0 - 1.0 + 3.0 * G3; // Offsets for last corner in (x,y,z) coords
+      var y3 = y0 - 1.0 + 3.0 * G3;
+      var z3 = z0 - 1.0 + 3.0 * G3;
+      // Work out the hashed gradient indices of the four simplex corners
+      var ii = i & 255;
+      var jj = j & 255;
+      var kk = k & 255;
+      // Calculate the contribution from the four corners
+      var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+      if (t0 < 0) n0 = 0.0;
+      else {
+        var gi0 = permMod12[ii + perm[jj + perm[kk]]] * 3;
+        t0 *= t0;
+        n0 = t0 * t0 * (grad3[gi0] * x0 + grad3[gi0 + 1] * y0 + grad3[gi0 + 2] * z0);
+      }
+      var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+      if (t1 < 0) n1 = 0.0;
+      else {
+        var gi1 = permMod12[ii + i1 + perm[jj + j1 + perm[kk + k1]]] * 3;
+        t1 *= t1;
+        n1 = t1 * t1 * (grad3[gi1] * x1 + grad3[gi1 + 1] * y1 + grad3[gi1 + 2] * z1);
+      }
+      var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+      if (t2 < 0) n2 = 0.0;
+      else {
+        var gi2 = permMod12[ii + i2 + perm[jj + j2 + perm[kk + k2]]] * 3;
+        t2 *= t2;
+        n2 = t2 * t2 * (grad3[gi2] * x2 + grad3[gi2 + 1] * y2 + grad3[gi2 + 2] * z2);
+      }
+      var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+      if (t3 < 0) n3 = 0.0;
+      else {
+        var gi3 = permMod12[ii + 1 + perm[jj + 1 + perm[kk + 1]]] * 3;
+        t3 *= t3;
+        n3 = t3 * t3 * (grad3[gi3] * x3 + grad3[gi3 + 1] * y3 + grad3[gi3 + 2] * z3);
+      }
+      // Add contributions from each corner to get the final noise value.
+      // The result is scaled to stay just inside [-1,1]
+      return 32.0 * (n0 + n1 + n2 + n3);
+    },
+    // 4D simplex noise, better simplex rank ordering method 2012-03-09
+    noise4D: function(x, y, z, w) {
+      var perm = this.perm;
+      var grad4 = this.grad4;
+
+      var n0, n1, n2, n3, n4; // Noise contributions from the five corners
+      // Skew the (x,y,z,w) space to determine which cell of 24 simplices we're in
+      var s = (x + y + z + w) * F4; // Factor for 4D skewing
+      var i = Math.floor(x + s);
+      var j = Math.floor(y + s);
+      var k = Math.floor(z + s);
+      var l = Math.floor(w + s);
+      var t = (i + j + k + l) * G4; // Factor for 4D unskewing
+      var X0 = i - t; // Unskew the cell origin back to (x,y,z,w) space
+      var Y0 = j - t;
+      var Z0 = k - t;
+      var W0 = l - t;
+      var x0 = x - X0; // The x,y,z,w distances from the cell origin
+      var y0 = y - Y0;
+      var z0 = z - Z0;
+      var w0 = w - W0;
+      // For the 4D case, the simplex is a 4D shape I won't even try to describe.
+      // To find out which of the 24 possible simplices we're in, we need to
+      // determine the magnitude ordering of x0, y0, z0 and w0.
+      // Six pair-wise comparisons are performed between each possible pair
+      // of the four coordinates, and the results are used to rank the numbers.
+      var rankx = 0;
+      var ranky = 0;
+      var rankz = 0;
+      var rankw = 0;
+      if (x0 > y0) rankx++;
+      else ranky++;
+      if (x0 > z0) rankx++;
+      else rankz++;
+      if (x0 > w0) rankx++;
+      else rankw++;
+      if (y0 > z0) ranky++;
+      else rankz++;
+      if (y0 > w0) ranky++;
+      else rankw++;
+      if (z0 > w0) rankz++;
+      else rankw++;
+      var i1, j1, k1, l1; // The integer offsets for the second simplex corner
+      var i2, j2, k2, l2; // The integer offsets for the third simplex corner
+      var i3, j3, k3, l3; // The integer offsets for the fourth simplex corner
+      // simplex[c] is a 4-vector with the numbers 0, 1, 2 and 3 in some order.
+      // Many values of c will never occur, since e.g. x>y>z>w makes x<z, y<w and x<w
+      // impossible. Only the 24 indices which have non-zero entries make any sense.
+      // We use a thresholding to set the coordinates in turn from the largest magnitude.
+      // Rank 3 denotes the largest coordinate.
+      i1 = rankx >= 3 ? 1 : 0;
+      j1 = ranky >= 3 ? 1 : 0;
+      k1 = rankz >= 3 ? 1 : 0;
+      l1 = rankw >= 3 ? 1 : 0;
+      // Rank 2 denotes the second largest coordinate.
+      i2 = rankx >= 2 ? 1 : 0;
+      j2 = ranky >= 2 ? 1 : 0;
+      k2 = rankz >= 2 ? 1 : 0;
+      l2 = rankw >= 2 ? 1 : 0;
+      // Rank 1 denotes the second smallest coordinate.
+      i3 = rankx >= 1 ? 1 : 0;
+      j3 = ranky >= 1 ? 1 : 0;
+      k3 = rankz >= 1 ? 1 : 0;
+      l3 = rankw >= 1 ? 1 : 0;
+      // The fifth corner has all coordinate offsets = 1, so no need to compute that.
+      var x1 = x0 - i1 + G4; // Offsets for second corner in (x,y,z,w) coords
+      var y1 = y0 - j1 + G4;
+      var z1 = z0 - k1 + G4;
+      var w1 = w0 - l1 + G4;
+      var x2 = x0 - i2 + 2.0 * G4; // Offsets for third corner in (x,y,z,w) coords
+      var y2 = y0 - j2 + 2.0 * G4;
+      var z2 = z0 - k2 + 2.0 * G4;
+      var w2 = w0 - l2 + 2.0 * G4;
+      var x3 = x0 - i3 + 3.0 * G4; // Offsets for fourth corner in (x,y,z,w) coords
+      var y3 = y0 - j3 + 3.0 * G4;
+      var z3 = z0 - k3 + 3.0 * G4;
+      var w3 = w0 - l3 + 3.0 * G4;
+      var x4 = x0 - 1.0 + 4.0 * G4; // Offsets for last corner in (x,y,z,w) coords
+      var y4 = y0 - 1.0 + 4.0 * G4;
+      var z4 = z0 - 1.0 + 4.0 * G4;
+      var w4 = w0 - 1.0 + 4.0 * G4;
+      // Work out the hashed gradient indices of the five simplex corners
+      var ii = i & 255;
+      var jj = j & 255;
+      var kk = k & 255;
+      var ll = l & 255;
+      // Calculate the contribution from the five corners
+      var t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
+      if (t0 < 0) n0 = 0.0;
+      else {
+        var gi0 = (perm[ii + perm[jj + perm[kk + perm[ll]]]] % 32) * 4;
+        t0 *= t0;
+        n0 = t0 * t0 * (grad4[gi0] * x0 + grad4[gi0 + 1] * y0 + grad4[gi0 + 2] * z0 + grad4[gi0 + 3] * w0);
+      }
+      var t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
+      if (t1 < 0) n1 = 0.0;
+      else {
+        var gi1 = (perm[ii + i1 + perm[jj + j1 + perm[kk + k1 + perm[ll + l1]]]] % 32) * 4;
+        t1 *= t1;
+        n1 = t1 * t1 * (grad4[gi1] * x1 + grad4[gi1 + 1] * y1 + grad4[gi1 + 2] * z1 + grad4[gi1 + 3] * w1);
+      }
+      var t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
+      if (t2 < 0) n2 = 0.0;
+      else {
+        var gi2 = (perm[ii + i2 + perm[jj + j2 + perm[kk + k2 + perm[ll + l2]]]] % 32) * 4;
+        t2 *= t2;
+        n2 = t2 * t2 * (grad4[gi2] * x2 + grad4[gi2 + 1] * y2 + grad4[gi2 + 2] * z2 + grad4[gi2 + 3] * w2);
+      }
+      var t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
+      if (t3 < 0) n3 = 0.0;
+      else {
+        var gi3 = (perm[ii + i3 + perm[jj + j3 + perm[kk + k3 + perm[ll + l3]]]] % 32) * 4;
+        t3 *= t3;
+        n3 = t3 * t3 * (grad4[gi3] * x3 + grad4[gi3 + 1] * y3 + grad4[gi3 + 2] * z3 + grad4[gi3 + 3] * w3);
+      }
+      var t4 = 0.6 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
+      if (t4 < 0) n4 = 0.0;
+      else {
+        var gi4 = (perm[ii + 1 + perm[jj + 1 + perm[kk + 1 + perm[ll + 1]]]] % 32) * 4;
+        t4 *= t4;
+        n4 = t4 * t4 * (grad4[gi4] * x4 + grad4[gi4 + 1] * y4 + grad4[gi4 + 2] * z4 + grad4[gi4 + 3] * w4);
+      }
+      // Sum up and scale the result to cover the range [-1,1]
+      return 27.0 * (n0 + n1 + n2 + n3 + n4);
+    }
+  };
+
+  function buildPermutationTable(random) {
+    var i;
+    var p = new Uint8Array(256);
+    for (i = 0; i < 256; i++) {
+      p[i] = i;
+    }
+    for (i = 0; i < 255; i++) {
+      var r = i + ~~(random() * (256 - i));
+      var aux = p[i];
+      p[i] = p[r];
+      p[r] = aux;
+    }
+    return p;
+  }
+  SimplexNoise._buildPermutationTable = buildPermutationTable;
+
+  function alea() {
+    // Johannes Baagøe <baagoe@baagoe.com>, 2010
+    var s0 = 0;
+    var s1 = 0;
+    var s2 = 0;
+    var c = 1;
+
+    var mash = masher();
+    s0 = mash(' ');
+    s1 = mash(' ');
+    s2 = mash(' ');
+
+    for (var i = 0; i < arguments.length; i++) {
+      s0 -= mash(arguments[i]);
+      if (s0 < 0) {
+        s0 += 1;
+      }
+      s1 -= mash(arguments[i]);
+      if (s1 < 0) {
+        s1 += 1;
+      }
+      s2 -= mash(arguments[i]);
+      if (s2 < 0) {
+        s2 += 1;
+      }
+    }
+    mash = null;
+    return function() {
+      var t = 2091639 * s0 + c * 2.3283064365386963e-10; // 2^-32
+      s0 = s1;
+      s1 = s2;
+      return s2 = t - (c = t | 0);
+    };
+  }
+  function masher() {
+    var n = 0xefc8249d;
+    return function(data) {
+      data = data.toString();
+      for (var i = 0; i < data.length; i++) {
+        n += data.charCodeAt(i);
+        var h = 0.02519603282416938 * n;
+        n = h >>> 0;
+        h -= n;
+        h *= n;
+        n = h >>> 0;
+        h -= n;
+        n += h * 0x100000000; // 2^32
+      }
+      return (n >>> 0) * 2.3283064365386963e-10; // 2^-32
+    };
+  }
+
+  // amd
+  if (typeof define !== 'undefined' && define.amd) define(function() {return SimplexNoise;});
+  // common js
+  if (typeof exports !== 'undefined') exports.SimplexNoise = SimplexNoise;
+  // browser
+  else if (typeof window !== 'undefined') window.SimplexNoise = SimplexNoise;
+  // nodejs
+  if (typeof module !== 'undefined') {
+    module.exports = SimplexNoise;
+  }
+
+})();
+
+},{}],43:[function(require,module,exports){
+const canvasSketch = require('canvas-sketch');
+const math = require('canvas-sketch-util/math');
+const eases = require('eases');
+const random = require('canvas-sketch-util/random');
+const colormap = require('colormap');
+
+const settings = {
+  dimensions: [ 1080, 1080 ],
+  animate: true,
+};
+
+const particles = [];
+
+const cursor = { x: 9999, y: 9999 };
+
+const colors = colormap({
+  colormap: 'rainbow-soft',
+  nshades: 20,
+});
+
+let elCanvas;
+
+const sketch = ({ width, height, canvas }) => {
+  let x, y, particle;
+  let pos = [];
+
+  const numCircle = 15;
+  const gapCircle = 8;
+  const gapDot = 4;
+  let dotRadius = 12;
+  let cirRadius = 0;
+  const fitRadius = dotRadius;
+
+  elCanvas = canvas;
+  canvas.addEventListener('mousedown', onMouseDown);
+
+  for (let i = 0; i < numCircle; i++) {
+    const circumference = 2 * Math.PI * cirRadius;
+    const numFit = i ? Math.floor(circumference / (fitRadius * 2 + gapDot)) : 1;
+    const fitSlice = 2 * Math.PI / numFit;
+
+    for (let j = 0; j < numFit ; j++){
+      const theta = fitSlice * j;
+
+      x = Math.cos(theta) * cirRadius + width * 0.5;
+      y = Math.sin(theta) * cirRadius + height * 0.5;
+
+      radius = dotRadius;
+
+      particle = new Particle({ x, y, radius });
+      particles.push(particle);
+    }
+
+    cirRadius += fitRadius * 2 + gapCircle;
+    dotRadius = (1 - eases.quadOut(i / numCircle)) * fitRadius;
+  }
+
   return ({ context, width, height }) => {
     context.fillStyle = 'black';
     context.fillRect(0, 0, width, height);
-    context.lineWidth = width * 0.005;
-    context.strokeStyle = 'white';
 
-    const w = width * 0.1;
-    const h = height * 0.1;
-    const gap = width * 0.03;
-    const ix = width * 0.17;
-    const iy = height * 0.17;
+    particles.sort((a, b) => a.scale - b.scale);
 
-    const off = width * 0.025;
-
-    let x, y;
-    
-    for (let i = 0; i < 5; i++) {
-      for (let j = 0; j < 5; j++){
-        x = ix + (w + gap) * i;
-        y = iy + (h + gap) * j;
-
-        context.beginPath();
-        context.rect(x,y,w,h);
-        context.stroke();
-
-        if(Math.random() < 0.5){
-          context.beginPath();
-          context.rect(x+off/2, y+off/2, w-off, h-off);
-          context.stroke();
-        }
-      }
-    }
+    particles.forEach(particle => {
+      particle.update();
+      particle.draw(context);
+    });
   };
+};
+
+const onMouseDown = (e) => {
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+
+  onMouseMove(e);
+};
+
+const onMouseMove = (e) => {
+  const x = (e.offsetX / elCanvas.offsetWidth) * elCanvas.width;
+  const y = (e.offsetY / elCanvas.offsetHeight) * elCanvas.height;
+
+  cursor.x = x;
+  cursor.y = y;
+};
+
+const onMouseUp = (e) => {
+  window.removeEventListener('mousemove', onMouseMove);
+  window.removeEventListener('mouseup', onMouseUp);
+
+  cursor.x = 9999;
+  cursor.y = 9999;
 };
 
 canvasSketch(sketch, settings);
 
-},{"canvas-sketch":1}],3:[function(require,module,exports){
+class Particle {
+  constructor({ x, y, radius = 10}) {
+    //position
+    this.x = x;
+    this.y = y;
+
+    //acceleration
+    this.ax = 0;
+    this.ay = 0;
+
+    //velocity
+    this.vx = 0;
+    this.vy = 0;
+
+    //initial position
+    this.ix = x;
+    this.iy = y;
+
+    this.radius = radius;
+    this.scale = 1;
+    this.color = colors[0];
+    
+    this.minDist = random.range(100, 200);
+    this.pushFactor = random.range(0.001, 0.02);
+    this.pullFactor = random.range(0.002, 0.006);
+    this.dampFactor = random.range(0.9, 0.95);
+  }
+
+  update() {
+    let dx, dy, dd, distDelta;
+    let idxColor;
+
+    //pull force
+    dx = this.ix - this.x;
+    dy = this.iy - this.y;
+    dd = Math.sqrt(dx * dx + dy * dy);
+
+    this.ax = dx * this.pullFactor;
+    this.ay = dy * this.pullFactor;
+
+    this.scale = math.mapRange(dd, 0, 200, 0.8, 3)
+
+    idxColor = Math.floor(math.mapRange(dd, 0, 200, 0, colors.length - 1, true));
+    this.color = colors[idxColor];
+
+    //push force
+    dx = this.x - cursor.x;
+    dy = this.y - cursor.y;
+    dd = Math.sqrt(dx * dx + dy * dy);
+
+    distDelta = this.minDist - dd;
+
+    if (dd < this.minDist) {
+      this.ax += dx * distDelta * this.pushFactor;
+      this.ay += dy * distDelta * this.pushFactor;
+    }
+
+    this.ax += 0.001;
+
+    this.vx += this.ax;
+    this.vy += this.ay;
+
+    this.vx *= this.dampFactor;
+    this.vy *= this.dampFactor;
+
+
+    this.x += this.vx;
+    this.y += this.vy;
+  }
+
+  draw(context) {
+    context.save();
+    context.translate(this.x, this.y);
+    context.fillStyle = this.color;
+
+    context.beginPath();
+    context.arc(0, 0, this.radius * this.scale, 0, Math.PI * 2);
+    context.fill();
+
+
+    context.restore();
+  }
+}
+},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3,"colormap":6,"eases":26}],44:[function(require,module,exports){
 (function (global){(function (){
 
 global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}]},{},[2,3])
+},{}]},{},[43,44])
 
-//# sourceMappingURL=sketch--01.js.map
+//# sourceMappingURL=sketch-11.js.map

@@ -1,688 +1,4 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-var cssColor = require('./lib/css-color');
-var names = require('./lib/css-color-names.json');
-var rgbLuminance = require('./lib/relative-luminance');
-var HSLUtil = require('./lib/hsl');
-var hexToRGBA = require('./lib/hex-to-rgba');
-var RGBAToHex = require('./lib/rgba-to-hex');
-
-module.exports.parse = cssColor.parse;
-module.exports.style = cssColor.style;
-module.exports.names = names;
-
-module.exports.relativeLuminance = function relativeLuminance (color) {
-  var result = module.exports.parse(color);
-  if (!result) return null;
-  return rgbLuminance(result.rgb);
-};
-
-// Extracted from @tmcw / wcag-contrast
-// https://github.com/tmcw/wcag-contrast
-module.exports.contrastRatio = function contrastRatio (colorA, colorB) {
-  var a = module.exports.relativeLuminance(colorA);
-  var b = module.exports.relativeLuminance(colorB);
-  if (a == null || b == null) return null;
-  var l1 = Math.max(a, b);
-  var l2 = Math.min(a, b);
-  return (l1 + 0.05) / (l2 + 0.05);
-};
-
-module.exports.offsetHSL = function (color, h, s, l) {
-  var result = module.exports.parse(color);
-  if (!result) return null;
-  result.hsla[0] += h || 0;
-  result.hsla[1] = Math.max(0, Math.min(100, result.hsla[1] + (s || 0)));
-  result.hsla[2] = Math.max(0, Math.min(100, result.hsla[2] + (l || 0)));
-  return module.exports.parse({ hsla: result.hsla });
-};
-
-module.exports.blend = function (background, foreground, opacity) {
-  var bg = module.exports.parse(background);
-  var fg = module.exports.parse(foreground);
-  if (bg == null || fg == null) return null;
-
-  var c0 = bg.rgba;
-  var c1 = fg.rgba;
-  opacity = typeof opacity === 'number' && isFinite(opacity) ? opacity : 1.0;
-  var alpha = opacity * c1[3];
-  if (alpha >= 1) {
-    // foreground is opaque so no blend required
-    return fg;
-  }
-  for (var i = 0; i < 3; i++) {
-    c1[i] = c1[i] * alpha + c0[i] * (c0[3] * (1 - alpha));
-  }
-  c1[3] = Math.max(0, Math.min(1, alpha + c0[3] * (1 - alpha)));
-  return module.exports.parse(c1); // re-parse to get new metadata
-};
-
-// Exposed but not yet documented
-module.exports.hexToRGBA = hexToRGBA;
-module.exports.RGBAToHex = RGBAToHex;
-module.exports.RGBAToHSLA = HSLUtil.RGBAToHSLA;
-module.exports.HSLAToRGBA = HSLUtil.HSLAToRGBA;
-
-},{"./lib/css-color":3,"./lib/css-color-names.json":2,"./lib/hex-to-rgba":4,"./lib/hsl":5,"./lib/relative-luminance":6,"./lib/rgba-to-hex":7}],2:[function(require,module,exports){
-module.exports={
-  "aliceblue": "#f0f8ff",
-  "antiquewhite": "#faebd7",
-  "aqua": "#00ffff",
-  "aquamarine": "#7fffd4",
-  "azure": "#f0ffff",
-  "beige": "#f5f5dc",
-  "bisque": "#ffe4c4",
-  "black": "#000000",
-  "blanchedalmond": "#ffebcd",
-  "blue": "#0000ff",
-  "blueviolet": "#8a2be2",
-  "brown": "#a52a2a",
-  "burlywood": "#deb887",
-  "cadetblue": "#5f9ea0",
-  "chartreuse": "#7fff00",
-  "chocolate": "#d2691e",
-  "coral": "#ff7f50",
-  "cornflowerblue": "#6495ed",
-  "cornsilk": "#fff8dc",
-  "crimson": "#dc143c",
-  "cyan": "#00ffff",
-  "darkblue": "#00008b",
-  "darkcyan": "#008b8b",
-  "darkgoldenrod": "#b8860b",
-  "darkgray": "#a9a9a9",
-  "darkgreen": "#006400",
-  "darkgrey": "#a9a9a9",
-  "darkkhaki": "#bdb76b",
-  "darkmagenta": "#8b008b",
-  "darkolivegreen": "#556b2f",
-  "darkorange": "#ff8c00",
-  "darkorchid": "#9932cc",
-  "darkred": "#8b0000",
-  "darksalmon": "#e9967a",
-  "darkseagreen": "#8fbc8f",
-  "darkslateblue": "#483d8b",
-  "darkslategray": "#2f4f4f",
-  "darkslategrey": "#2f4f4f",
-  "darkturquoise": "#00ced1",
-  "darkviolet": "#9400d3",
-  "deeppink": "#ff1493",
-  "deepskyblue": "#00bfff",
-  "dimgray": "#696969",
-  "dimgrey": "#696969",
-  "dodgerblue": "#1e90ff",
-  "firebrick": "#b22222",
-  "floralwhite": "#fffaf0",
-  "forestgreen": "#228b22",
-  "fuchsia": "#ff00ff",
-  "gainsboro": "#dcdcdc",
-  "ghostwhite": "#f8f8ff",
-  "gold": "#ffd700",
-  "goldenrod": "#daa520",
-  "gray": "#808080",
-  "green": "#008000",
-  "greenyellow": "#adff2f",
-  "grey": "#808080",
-  "honeydew": "#f0fff0",
-  "hotpink": "#ff69b4",
-  "indianred": "#cd5c5c",
-  "indigo": "#4b0082",
-  "ivory": "#fffff0",
-  "khaki": "#f0e68c",
-  "lavender": "#e6e6fa",
-  "lavenderblush": "#fff0f5",
-  "lawngreen": "#7cfc00",
-  "lemonchiffon": "#fffacd",
-  "lightblue": "#add8e6",
-  "lightcoral": "#f08080",
-  "lightcyan": "#e0ffff",
-  "lightgoldenrodyellow": "#fafad2",
-  "lightgray": "#d3d3d3",
-  "lightgreen": "#90ee90",
-  "lightgrey": "#d3d3d3",
-  "lightpink": "#ffb6c1",
-  "lightsalmon": "#ffa07a",
-  "lightseagreen": "#20b2aa",
-  "lightskyblue": "#87cefa",
-  "lightslategray": "#778899",
-  "lightslategrey": "#778899",
-  "lightsteelblue": "#b0c4de",
-  "lightyellow": "#ffffe0",
-  "lime": "#00ff00",
-  "limegreen": "#32cd32",
-  "linen": "#faf0e6",
-  "magenta": "#ff00ff",
-  "maroon": "#800000",
-  "mediumaquamarine": "#66cdaa",
-  "mediumblue": "#0000cd",
-  "mediumorchid": "#ba55d3",
-  "mediumpurple": "#9370db",
-  "mediumseagreen": "#3cb371",
-  "mediumslateblue": "#7b68ee",
-  "mediumspringgreen": "#00fa9a",
-  "mediumturquoise": "#48d1cc",
-  "mediumvioletred": "#c71585",
-  "midnightblue": "#191970",
-  "mintcream": "#f5fffa",
-  "mistyrose": "#ffe4e1",
-  "moccasin": "#ffe4b5",
-  "navajowhite": "#ffdead",
-  "navy": "#000080",
-  "oldlace": "#fdf5e6",
-  "olive": "#808000",
-  "olivedrab": "#6b8e23",
-  "orange": "#ffa500",
-  "orangered": "#ff4500",
-  "orchid": "#da70d6",
-  "palegoldenrod": "#eee8aa",
-  "palegreen": "#98fb98",
-  "paleturquoise": "#afeeee",
-  "palevioletred": "#db7093",
-  "papayawhip": "#ffefd5",
-  "peachpuff": "#ffdab9",
-  "peru": "#cd853f",
-  "pink": "#ffc0cb",
-  "plum": "#dda0dd",
-  "powderblue": "#b0e0e6",
-  "purple": "#800080",
-  "rebeccapurple": "#663399",
-  "red": "#ff0000",
-  "rosybrown": "#bc8f8f",
-  "royalblue": "#4169e1",
-  "saddlebrown": "#8b4513",
-  "salmon": "#fa8072",
-  "sandybrown": "#f4a460",
-  "seagreen": "#2e8b57",
-  "seashell": "#fff5ee",
-  "sienna": "#a0522d",
-  "silver": "#c0c0c0",
-  "skyblue": "#87ceeb",
-  "slateblue": "#6a5acd",
-  "slategray": "#708090",
-  "slategrey": "#708090",
-  "snow": "#fffafa",
-  "springgreen": "#00ff7f",
-  "steelblue": "#4682b4",
-  "tan": "#d2b48c",
-  "teal": "#008080",
-  "thistle": "#d8bfd8",
-  "tomato": "#ff6347",
-  "turquoise": "#40e0d0",
-  "violet": "#ee82ee",
-  "wheat": "#f5deb3",
-  "white": "#ffffff",
-  "whitesmoke": "#f5f5f5",
-  "yellow": "#ffff00",
-  "yellowgreen": "#9acd32"
-}
-},{}],3:[function(require,module,exports){
-
-var names = require('./css-color-names.json');
-var HSLUtil = require('./hsl');
-var hexToRGBA = require('./hex-to-rgba');
-var RGBAToHex = require('./rgba-to-hex');
-var wrap = require('./wrap');
-
-function parseStyle (str) {
-  if (typeof str !== 'string') {
-    throw new TypeError('Color parsing must be performed on a string parameter');
-  }
-
-  str = str.toLowerCase();
-
-  if (str in names) {
-    str = names[str];
-  } else if (str === 'transparent') {
-    str = '#00000000';
-  }
-
-  var rgba, hsla, hex;
-  if (/^#[a-f0-9]+$/.test(str)) {
-    rgba = hexToRGBA(str);
-    hex = RGBAToHex(rgba);
-    hsla = HSLUtil.RGBAToHSLA(rgba);
-  } else {
-    var match = /^((?:rgb|hsl)a?)\s*\(([^)]*)\)/.exec(str);
-    if (!match) return null;
-    var type = match[1].replace(/a$/, '');
-    var parts = match[2].replace(/^\s+|\s+$/g, '').split(/\s*,\s*/).map(function (n, i) {
-      // opaque part
-      if (i <= 2) return Math.round(parseFloat(n) || 0);
-      // alpha part
-      else {
-        n = parseFloat(n);
-        if (typeof n !== 'number' || !isFinite(n)) n = 1;
-        return n;
-      }
-    });
-    // fill in alpha with 1.0 by default
-    if (typeof parts[3] === 'undefined' || !isFinite(parts[3])) {
-      parts[3] = 1;
-    }
-    if (type === 'rgb') {
-      hsla = HSLUtil.RGBAToHSLA(parts);
-      rgba = parts;
-    } else if (type === 'hsl') {
-      rgba = HSLUtil.HSLAToRGBA(parts);
-      parts[0] = wrap(parts[0], 0, 360);
-      hsla = parts;
-    }
-    hex = RGBAToHex(rgba);
-  }
-
-  if (!rgba && !hex && !hsla) return null;
-
-  var ret = {
-    hex: hex,
-    alpha: rgba[3],
-    rgb: rgba.slice(0, 3),
-    rgba: rgba,
-    hsl: hsla.slice(0, 3),
-    hsla: hsla
-  };
-
-  return ret;
-}
-
-module.exports.parse = parseColor;
-function parseColor (color) {
-  if (typeof color === 'string') {
-    return parseStyle(color);
-  } else if (Array.isArray(color) && color.length >= 3) {
-    var rgbStr = rgbStyle(color[0], color[1], color[2], color[3]);
-    return parseStyle(rgbStr);
-  } else if (color && typeof color === 'object') {
-    var str;
-    if (color.hex) str = color.hex;
-    else if (color.rgba) str = rgbStyle(color.rgba[0], color.rgba[1], color.rgba[2], color.rgba[3]);
-    else if (color.hsla) str = hslStyle(color.hsla[0], color.hsla[1], color.hsla[2], color.hsla[3]);
-    else if (color.rgb) str = rgbStyle(color.rgb[0], color.rgb[1], color.rgb[2]);
-    else if (color.hsl) str = hslStyle(color.hsl[0], color.hsl[1], color.hsl[2]);
-    if (str) return parseStyle(str);
-  }
-  return null;
-}
-
-module.exports.style = style;
-function style (color) {
-  var result = module.exports.parse(color);
-  if (result) {
-    var rgba = result.rgba;
-    return rgbStyle(rgba[0], rgba[1], rgba[2], rgba[3]);
-  }
-  return null;
-}
-
-function rgbStyle (r, g, b, a) {
-  r = Math.max(0, Math.min(255, Math.round(r)));
-  g = Math.max(0, Math.min(255, Math.round(g)));
-  b = Math.max(0, Math.min(255, Math.round(b)));
-  if (a === 1 || !isFinite(a) || typeof a === 'undefined') {
-    return 'rgb(' + [ r, g, b ].join(', ') + ')';
-  } else {
-    a = Math.max(0, Math.min(1, a));
-    return 'rgba(' + [ r, g, b, a ].join(', ') + ')';
-  }
-}
-
-function hslStyle (h, s, l, a) {
-  h = wrap(h, 0, 360);
-  h = Math.max(0, Math.min(360, Math.round(h)));
-  s = Math.max(0, Math.min(100, Math.round(s)));
-  l = Math.max(0, Math.min(100, Math.round(l)));
-  if (a === 1 || !isFinite(a) || typeof a === 'undefined') {
-    return 'hsl(' + [ h, s, l ].join(', ') + ')';
-  } else {
-    a = Math.max(0, Math.min(1, a));
-    return 'hsla(' + [ h, s, l, a ].join(', ') + ')';
-  }
-}
-
-},{"./css-color-names.json":2,"./hex-to-rgba":4,"./hsl":5,"./rgba-to-hex":7,"./wrap":8}],4:[function(require,module,exports){
-module.exports = hexToRGBA;
-function hexToRGBA (str) {
-  if (typeof str !== 'string') {
-    throw new TypeError('Hex code parsing must be performed on a string parameter');
-  }
-
-  str = str.toLowerCase();
-
-  if (!/^#[a-f0-9]+$/.test(str)) {
-    return null;
-  }
-
-  var hex = str.replace(/^#/, '');
-  var alpha = 1;
-
-  if (hex.length === 8) {
-    alpha = parseInt(hex.slice(6, 8), 16) / 255;
-    hex = hex.slice(0, 6);
-  }
-
-  if (hex.length === 4) {
-    alpha = parseInt(hex.slice(3, 4).repeat(2), 16) / 255;
-    hex = hex.slice(0, 3);
-  }
-
-  if (hex.length === 3) {
-    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-  }
-
-  var num = parseInt(hex, 16);
-  var red = num >> 16;
-  var green = (num >> 8) & 255;
-  var blue = num & 255;
-
-  return [ red, green, blue, alpha ];
-}
-
-},{}],5:[function(require,module,exports){
-var floatHSL2RGB = require('float-hsl2rgb');
-var floatRGB2HSL = require('float-rgb2hsl');
-var wrap = require('./wrap');
-
-module.exports.RGBAToHSLA = RGBAToHSLA;
-function RGBAToHSLA (rgba) {
-  var floatHSL = floatRGB2HSL([ rgba[0] / 255, rgba[1] / 255, rgba[2] / 255 ]);
-  return [
-    Math.max(0, Math.min(360, Math.round(floatHSL[0] * 360))),
-    Math.max(0, Math.min(100, Math.round(floatHSL[1] * 100))),
-    Math.max(0, Math.min(100, Math.round(floatHSL[2] * 100))),
-    rgba[3]
-  ];
-}
-
-module.exports.HSLAToRGBA = HSLAToRGBA;
-function HSLAToRGBA (hsla) {
-  var hue = wrap(hsla[0], 0, 360);
-  var floatRGB = floatHSL2RGB([ hue / 360, hsla[1] / 100, hsla[2] / 100 ]);
-  return [
-    Math.max(0, Math.min(255, Math.round(floatRGB[0] * 255))),
-    Math.max(0, Math.min(255, Math.round(floatRGB[1] * 255))),
-    Math.max(0, Math.min(255, Math.round(floatRGB[2] * 255))),
-    hsla[3]
-  ];
-}
-
-},{"./wrap":8,"float-hsl2rgb":13,"float-rgb2hsl":14}],6:[function(require,module,exports){
-// Extracted from @tmcw / wcag-contrast
-// https://github.com/tmcw/relative-luminance/blob/master/index.js
-
-// # Relative luminance
-// http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
-// https://en.wikipedia.org/wiki/Luminance_(relative)
-// https://en.wikipedia.org/wiki/Luminosity_function
-// https://en.wikipedia.org/wiki/Rec._709#Luma_coefficients
-
-// red, green, and blue coefficients
-var rc = 0.2126;
-var gc = 0.7152;
-var bc = 0.0722;
-// low-gamma adjust coefficient
-var lowc = 1 / 12.92;
-
-function adjustGamma (a) {
-  return Math.pow((a + 0.055) / 1.055, 2.4);
-}
-
-module.exports = relativeLuminance;
-function relativeLuminance (rgb) {
-  var rsrgb = rgb[0] / 255;
-  var gsrgb = rgb[1] / 255;
-  var bsrgb = rgb[2] / 255;
-  var r = rsrgb <= 0.03928 ? rsrgb * lowc : adjustGamma(rsrgb);
-  var g = gsrgb <= 0.03928 ? gsrgb * lowc : adjustGamma(gsrgb);
-  var b = bsrgb <= 0.03928 ? bsrgb * lowc : adjustGamma(bsrgb);
-  return r * rc + g * gc + b * bc;
-}
-
-},{}],7:[function(require,module,exports){
-module.exports = rgbaToHex;
-function rgbaToHex (rgba) {
-  if (!rgba || !Array.isArray(rgba)) {
-    throw new TypeError('Must specify an array to convert into a hex code');
-  }
-
-  var r = Math.max(0, Math.min(255, Math.round(rgba[0] || 0)));
-  var g = Math.max(0, Math.min(255, Math.round(rgba[1] || 0)));
-  var b = Math.max(0, Math.min(255, Math.round(rgba[2] || 0)));
-
-  var alpha = rgba[3];
-  if (typeof alpha === 'undefined' || !isFinite(alpha)) {
-    alpha = 1;
-  }
-  var a = Math.max(0, Math.min(255, Math.round(alpha * 255)));
-  var alphaParam = a === 255 ? '' : (a | 1 << 8).toString(16).slice(1);
-  var result = ((b | g << 8 | r << 16) | 1 << 24).toString(16).slice(1) + alphaParam;
-  return '#' + result;
-}
-
-},{}],8:[function(require,module,exports){
-module.exports = wrap;
-function wrap (value, from, to) {
-  if (typeof from !== 'number' || typeof to !== 'number') {
-    throw new TypeError('Must specify "to" and "from" arguments as numbers');
-  }
-  // algorithm from http://stackoverflow.com/a/5852628/599884
-  if (from > to) {
-    var t = from;
-    from = to;
-    to = t;
-  }
-  var cycle = to - from;
-  if (cycle === 0) {
-    return to;
-  }
-  return value - cycle * Math.floor((value - from) / cycle);
-}
-
-},{}],9:[function(require,module,exports){
-var defined = require('defined');
-var wrap = require('./lib/wrap');
-var EPSILON = Number.EPSILON;
-
-function clamp (value, min, max) {
-  return min < max
-    ? (value < min ? min : value > max ? max : value)
-    : (value < max ? max : value > min ? min : value);
-}
-
-function clamp01 (v) {
-  return clamp(v, 0, 1);
-}
-
-function lerp (min, max, t) {
-  return min * (1 - t) + max * t;
-}
-
-function inverseLerp (min, max, t) {
-  if (Math.abs(min - max) < EPSILON) return 0;
-  else return (t - min) / (max - min);
-}
-
-function smoothstep (min, max, t) {
-  var x = clamp(inverseLerp(min, max, t), 0, 1);
-  return x * x * (3 - 2 * x);
-}
-
-function toFinite (n, defaultValue) {
-  defaultValue = defined(defaultValue, 0);
-  return typeof n === 'number' && isFinite(n) ? n : defaultValue;
-}
-
-function expandVector (dims) {
-  if (typeof dims !== 'number') throw new TypeError('Expected dims argument');
-  return function (p, defaultValue) {
-    defaultValue = defined(defaultValue, 0);
-    var scalar;
-    if (p == null) {
-      // No vector, create a default one
-      scalar = defaultValue;
-    } else if (typeof p === 'number' && isFinite(p)) {
-      // Expand single channel to multiple vector
-      scalar = p;
-    }
-
-    var out = [];
-    var i;
-    if (scalar == null) {
-      for (i = 0; i < dims; i++) {
-        out[i] = toFinite(p[i], defaultValue);
-      }
-    } else {
-      for (i = 0; i < dims; i++) {
-        out[i] = scalar;
-      }
-    }
-    return out;
-  };
-}
-
-function lerpArray (min, max, t, out) {
-  out = out || [];
-  if (min.length !== max.length) {
-    throw new TypeError('min and max array are expected to have the same length');
-  }
-  for (var i = 0; i < min.length; i++) {
-    out[i] = lerp(min[i], max[i], t);
-  }
-  return out;
-}
-
-function newArray (n, initialValue) {
-  n = defined(n, 0);
-  if (typeof n !== 'number') throw new TypeError('Expected n argument to be a number');
-  var out = [];
-  for (var i = 0; i < n; i++) out.push(initialValue);
-  return out;
-}
-
-function linspace (n, opts) {
-  n = defined(n, 0);
-  if (typeof n !== 'number') throw new TypeError('Expected n argument to be a number');
-  opts = opts || {};
-  if (typeof opts === 'boolean') {
-    opts = { endpoint: true };
-  }
-  var offset = defined(opts.offset, 0);
-  if (opts.endpoint) {
-    return newArray(n).map(function (_, i) {
-      return n <= 1 ? 0 : ((i + offset) / (n - 1));
-    });
-  } else {
-    return newArray(n).map(function (_, i) {
-      return (i + offset) / n;
-    });
-  }
-}
-
-function lerpFrames (values, t, out) {
-  t = clamp(t, 0, 1);
-
-  var len = values.length - 1;
-  var whole = t * len;
-  var frame = Math.floor(whole);
-  var fract = whole - frame;
-
-  var nextFrame = Math.min(frame + 1, len);
-  var a = values[frame % values.length];
-  var b = values[nextFrame % values.length];
-  if (typeof a === 'number' && typeof b === 'number') {
-    return lerp(a, b, fract);
-  } else if (Array.isArray(a) && Array.isArray(b)) {
-    return lerpArray(a, b, fract, out);
-  } else {
-    throw new TypeError('Mismatch in value type of two array elements: ' + frame + ' and ' + nextFrame);
-  }
-}
-
-function mod (a, b) {
-  return ((a % b) + b) % b;
-}
-
-function degToRad (n) {
-  return n * Math.PI / 180;
-}
-
-function radToDeg (n) {
-  return n * 180 / Math.PI;
-}
-
-function fract (n) {
-  return n - Math.floor(n);
-}
-
-function sign (n) {
-  if (n > 0) return 1;
-  else if (n < 0) return -1;
-  else return 0;
-}
-
-// Specific function from Unity / ofMath, not sure its needed?
-// function lerpWrap (a, b, t, min, max) {
-//   return wrap(a + wrap(b - a, min, max) * t, min, max)
-// }
-
-function pingPong (t, length) {
-  t = mod(t, length * 2);
-  return length - Math.abs(t - length);
-}
-
-function damp (a, b, lambda, dt) {
-  return lerp(a, b, 1 - Math.exp(-lambda * dt));
-}
-
-function dampArray (a, b, lambda, dt, out) {
-  out = out || [];
-  for (var i = 0; i < a.length; i++) {
-    out[i] = damp(a[i], b[i], lambda, dt);
-  }
-  return out;
-}
-
-function mapRange (value, inputMin, inputMax, outputMin, outputMax, clamp) {
-  // Reference:
-  // https://openframeworks.cc/documentation/math/ofMath/
-  if (Math.abs(inputMin - inputMax) < EPSILON) {
-    return outputMin;
-  } else {
-    var outVal = ((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin);
-    if (clamp) {
-      if (outputMax < outputMin) {
-        if (outVal < outputMax) outVal = outputMax;
-        else if (outVal > outputMin) outVal = outputMin;
-      } else {
-        if (outVal > outputMax) outVal = outputMax;
-        else if (outVal < outputMin) outVal = outputMin;
-      }
-    }
-    return outVal;
-  }
-}
-
-module.exports = {
-  mod: mod,
-  fract: fract,
-  sign: sign,
-  degToRad: degToRad,
-  radToDeg: radToDeg,
-  wrap: wrap,
-  pingPong: pingPong,
-  linspace: linspace,
-  lerp: lerp,
-  lerpArray: lerpArray,
-  inverseLerp: inverseLerp,
-  lerpFrames: lerpFrames,
-  clamp: clamp,
-  clamp01: clamp01,
-  smoothstep: smoothstep,
-  damp: damp,
-  dampArray: dampArray,
-  mapRange: mapRange,
-  expand2D: expandVector(2),
-  expand3D: expandVector(3),
-  expand4D: expandVector(4)
-};
-
-},{"./lib/wrap":8,"defined":12}],10:[function(require,module,exports){
 var seedRandom = require('seed-random');
 var SimplexNoise = require('simplex-noise');
 var defined = require('defined');
@@ -1012,7 +328,7 @@ function createRandom (defaultSeed) {
 
 module.exports = createRandom();
 
-},{"defined":12,"seed-random":16,"simplex-noise":17}],11:[function(require,module,exports){
+},{"defined":3,"seed-random":4,"simplex-noise":5}],2:[function(require,module,exports){
 (function (global){(function (){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -3171,7 +2487,7 @@ module.exports = createRandom();
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],12:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict';
 
 module.exports = function defined() {
@@ -3182,562 +2498,7 @@ module.exports = function defined() {
 	}
 };
 
-},{}],13:[function(require,module,exports){
-module.exports = hsl2rgb
-function hsl2rgb (hsl) {
-  var h = hsl[0],
-    s = hsl[1],
-    l = hsl[2],
-    t1, t2, t3, rgb, val
-
-  if (s === 0) {
-    val = l
-    return [val, val, val]
-  }
-
-  if (l < 0.5) {
-    t2 = l * (1 + s)
-  } else {
-    t2 = l + s - l * s
-  }
-  t1 = 2 * l - t2
-
-  rgb = [0, 0, 0]
-  for (var i = 0; i < 3; i++) {
-    t3 = h + 1 / 3 * -(i - 1)
-    if (t3 < 0) {
-      t3++
-    }
-    if (t3 > 1) {
-      t3--
-    }
-
-    if (6 * t3 < 1) {
-      val = t1 + (t2 - t1) * 6 * t3
-    } else if (2 * t3 < 1) {
-      val = t2
-    } else if (3 * t3 < 2) {
-      val = t1 + (t2 - t1) * (2 / 3 - t3) * 6
-    } else {
-      val = t1
-    }
-
-    rgb[i] = val
-  }
-
-  return rgb
-}
-
-},{}],14:[function(require,module,exports){
-module.exports = rgb2hsl
-function rgb2hsl (rgb) {
-  var r = rgb[0],
-    g = rgb[1],
-    b = rgb[2],
-    min = Math.min(r, g, b),
-    max = Math.max(r, g, b),
-    delta = max - min,
-    h, s, l
-
-  if (max === min) {
-    h = 0
-  } else if (r === max) {
-    h = (g - b) / delta
-  } else if (g === max) {
-    h = 2 + (b - r) / delta
-  } else if (b === max) {
-    h = 4 + (r - g) / delta
-  }
-
-  h = Math.min(h * 60, 360)
-
-  if (h < 0) {
-    h += 360
-  }
-
-  l = (min + max) / 2
-
-  if (max === min) {
-    s = 0
-  } else if (l <= 0.5) {
-    s = delta / (max + min)
-  } else {
-    s = delta / (2 - max - min)
-  }
-
-  return [h / 360, s, l]
-}
-
-},{}],15:[function(require,module,exports){
-module.exports=[
-  {
-    "name": "Black",
-    "hex": "#000000",
-    "pantone": "BLACK U"
-  },
-  {
-    "name": "Burgundy",
-    "hex": "#914e72",
-    "pantone": "235 U",
-    "zType": "S-4225"
-  },
-  {
-    "name": "Blue",
-    "hex": "#0078bf",
-    "pantone": "3005 U",
-    "zType": "S-4257"
-  },
-  {
-    "name": "Green",
-    "hex": "#00a95c",
-    "pantone": "354 U",
-    "zType": "S-4259"
-  },
-  {
-    "name": "Medium Blue",
-    "hex": "#3255a4",
-    "pantone": "286 U",
-    "zType": "S-4261"
-  },
-  {
-    "name": "Bright Red",
-    "hex": "#f15060",
-    "pantone": "185 U",
-    "zType": "S-4263"
-  },
-  {
-    "name": "RisoFederal Blue",
-    "hex": "#3d5588",
-    "pantone": "288 U",
-    "zType": "S-4265"
-  },
-  {
-    "name": "Purple",
-    "hex": "#765ba7",
-    "pantone": "2685 U",
-    "zType": "S-4267"
-  },
-  {
-    "name": "Teal",
-    "hex": "#00838a",
-    "pantone": "321 U",
-    "zType": "S-4269"
-  },
-  {
-    "name": "Flat Gold",
-    "hex": "#bb8b41",
-    "pantone": "1245 U",
-    "zType": "S-4271"
-  },
-  {
-    "name": "Hunter Green",
-    "hex": "#407060",
-    "pantone": "342 U",
-    "zType": "S-4273"
-  },
-  {
-    "name": "Red",
-    "hex": "#ff665e",
-    "pantone": "WARM RED U",
-    "zType": "S-4275"
-  },
-  {
-    "name": "Brown",
-    "hex": "#925f52",
-    "pantone": "7526 U",
-    "zType": "S-4277"
-  },
-  {
-    "name": "Yellow",
-    "hex": "#ffe800",
-    "pantone": "YELLOW U",
-    "zType": "S-4279"
-  },
-  {
-    "name": "Marine Red",
-    "hex": "#d2515e",
-    "pantone": "186 U",
-    "zType": "S-4281"
-  },
-  {
-    "name": "Orange",
-    "hex": "#ff6c2f",
-    "pantone": "ORANGE 021 U",
-    "zType": "S-4283"
-  },
-  {
-    "name": "Fluorescent Pink",
-    "hex": "#ff48b0",
-    "pantone": "806 U",
-    "zType": "S-4287"
-  },
-  {
-    "name": "Light Gray",
-    "hex": "#88898a",
-    "pantone": "424 U",
-    "zType": "S-4291"
-  },
-  {
-    "name": "Metallic Gold",
-    "hex": "#ac936e",
-    "pantone": "872 U",
-    "zType": " S-2772"
-  },
-  {
-    "name": "Crimson",
-    "hex": "#e45d50",
-    "pantone": "485 U",
-    "zType": "S-4285"
-  },
-  {
-    "name": "Fluorescent Orange",
-    "hex": "#ff7477",
-    "pantone": "805 U",
-    "zType": "S-4289"
-  },
-  {
-    "name": "Cornflower",
-    "hex": "#62a8e5",
-    "pantone": "292 U",
-    "zType": "S-4617"
-  },
-  {
-    "name": "Sky Blue",
-    "hex": "#4982cf",
-    "pantone": "285U",
-    "zType": "S-4618"
-  },
-  {
-    "name": "Sea Blue",
-    "hex": "#0074a2",
-    "pantone": "307 U",
-    "zType": "S-4619"
-  },
-  {
-    "name": "Lake",
-    "hex": "#235ba8",
-    "pantone": "293 U",
-    "zType": "S-4620"
-  },
-  {
-    "name": "Indigo",
-    "hex": "#484d7a",
-    "pantone": "2758 U",
-    "zType": "S-4621"
-  },
-  {
-    "name": "Midnight",
-    "hex": "#435060",
-    "pantone": "296 U",
-    "zType": "S-4622"
-  },
-  {
-    "name": "Mist",
-    "hex": "#d5e4c0",
-    "pantone": "7485 U",
-    "zType": "S-4623"
-  },
-  {
-    "name": "Granite",
-    "hex": "#a5aaa8",
-    "pantone": "7538 U",
-    "zType": "S-4624"
-  },
-  {
-    "name": "Charcoal",
-    "hex": "#70747c",
-    "pantone": "7540 U",
-    "zType": "S-4625"
-  },
-  {
-    "name": "Smoky Teal",
-    "hex": "#5f8289",
-    "pantone": "5483 U",
-    "zType": "S-4626"
-  },
-  {
-    "name": "Steel",
-    "hex": "#375e77",
-    "pantone": "302 U",
-    "zType": "S-4627"
-  },
-  {
-    "name": "Slate",
-    "hex": "#5e695e",
-    "pantone": "5605 U",
-    "zType": "S-4628"
-  },
-  {
-    "name": "Turquoise",
-    "hex": "#00aa93",
-    "pantone": "3275 U",
-    "zType": "S-4629"
-  },
-  {
-    "name": "Emerald",
-    "hex": "#19975d",
-    "pantone": "355 U",
-    "zType": "S-4630"
-  },
-  {
-    "name": "Grass",
-    "hex": "#397e58",
-    "pantone": "356 U",
-    "zType": "S-4631"
-  },
-  {
-    "name": "Forest",
-    "hex": "#516e5a",
-    "pantone": "357 U",
-    "zType": "S-4632"
-  },
-  {
-    "name": "Spruce",
-    "hex": "#4a635d",
-    "pantone": "567 U",
-    "zType": "S-4633"
-  },
-  {
-    "name": "Moss",
-    "hex": "#68724d",
-    "pantone": "371 U",
-    "zType": "S-4634"
-  },
-  {
-    "name": "Sea Foam",
-    "hex": "#62c2b1",
-    "pantone": "570 U",
-    "zType": "S-4635"
-  },
-  {
-    "name": "Kelly Green",
-    "hex": "#67b346",
-    "pantone": " 368 U",
-    "zType": "S-4636"
-  },
-  {
-    "name": "Light Teal",
-    "hex": "#009da5",
-    "pantone": "320 U",
-    "zType": "S-4637"
-  },
-  {
-    "name": "Ivy",
-    "hex": "#169b62",
-    "pantone": "347 U",
-    "zType": "S-4638"
-  },
-  {
-    "name": "Pine",
-    "hex": "#237e74",
-    "pantone": "3295 U",
-    "zType": "S-4639"
-  },
-  {
-    "name": "Lagoon",
-    "hex": "#2f6165",
-    "pantone": "323 U",
-    "zType": "S-4640"
-  },
-  {
-    "name": "Violet",
-    "hex": "#9d7ad2",
-    "pantone": "265 U",
-    "zType": "S-4641"
-  },
-  {
-    "name": "Orchid",
-    "hex": "#aa60bf",
-    "pantone": "2592 U",
-    "zType": "S-4642"
-  },
-  {
-    "name": "Plum",
-    "hex": "#845991",
-    "pantone": "2603 U",
-    "zType": "S-4644"
-  },
-  {
-    "name": "Raisin",
-    "hex": "#775d7a",
-    "pantone": "519 U",
-    "zType": "S-4645"
-  },
-  {
-    "name": "Grape",
-    "hex": "#6c5d80",
-    "pantone": "2695 U",
-    "zType": "S-4646"
-  },
-  {
-    "name": "Scarlet",
-    "hex": "#f65058",
-    "pantone": "RED 032 U",
-    "zType": "S-4647"
-  },
-  {
-    "name": "Tomato",
-    "hex": "#d2515e",
-    "pantone": "186 U",
-    "zType": "S-4648"
-  },
-  {
-    "name": "Cranberry",
-    "hex": "#d1517a",
-    "pantone": "214 U",
-    "zType": "S-4649"
-  },
-  {
-    "name": "Maroon",
-    "hex": "#9e4c6e",
-    "pantone": "221 U",
-    "zType": "S-4650"
-  },
-  {
-    "name": "Raspberry Red",
-    "hex": "#d1517a",
-    "pantone": "214U",
-    "zType": "S-4651"
-  },
-  {
-    "name": "Brick",
-    "hex": "#a75154",
-    "pantone": "1807 U",
-    "zType": "S-4652"
-  },
-  {
-    "name": "Light Lime",
-    "hex": "#e3ed55",
-    "pantone": "387 U",
-    "zType": "S-4653"
-  },
-  {
-    "name": "Sunflower",
-    "hex": "#ffb511",
-    "pantone": "116 U",
-    "zType": "S-4654"
-  },
-  {
-    "name": "Melon",
-    "hex": "#ffae3b",
-    "pantone": "1235 U",
-    "zType": "S-4655"
-  },
-  {
-    "name": "Apricot",
-    "hex": "#f6a04d",
-    "pantone": "143 U",
-    "zType": "S-4656"
-  },
-  {
-    "name": "Paprika",
-    "hex": "#ee7f4b",
-    "pantone": "158 U",
-    "zType": "S-4657"
-  },
-  {
-    "name": "Pumpkin",
-    "hex": "#ff6f4c",
-    "pantone": "1655 U",
-    "zType": "S-4658"
-  },
-  {
-    "name": "Bright Olive Green",
-    "hex": "#b49f29",
-    "pantone": "103 U",
-    "zType": "S-4659"
-  },
-  {
-    "name": "Bright Gold",
-    "hex": "#ba8032",
-    "pantone": "131 U",
-    "zType": "S-4660"
-  },
-  {
-    "name": "Copper",
-    "hex": "#bd6439",
-    "pantone": "1525 U",
-    "zType": "S-4661"
-  },
-  {
-    "name": "Mahogany",
-    "hex": "#8e595a",
-    "pantone": "491 U",
-    "zType": "S-4662"
-  },
-  {
-    "name": "Bisque",
-    "hex": "#f2cdcf",
-    "pantone": "503 U",
-    "zType": "S-4663"
-  },
-  {
-    "name": "Bubble Gum",
-    "hex": "#f984ca",
-    "pantone": "231 U",
-    "zType": "S-4664"
-  },
-  {
-    "name": "Light Mauve",
-    "hex": "#e6b5c9",
-    "pantone": "7430 U",
-    "zType": "S-4665"
-  },
-  {
-    "name": "Dark Mauve",
-    "hex": "#bd8ca6",
-    "pantone": "687 U",
-    "zType": "S-4666"
-  },
-  {
-    "name": "Wine",
-    "hex": "#914e72",
-    "pantone": "235 U",
-    "zType": "S-4674"
-  },
-  {
-    "name": "Gray",
-    "hex": "#928d88",
-    "pantone": "403 U",
-    "zType": "S-4693"
-  },
-  {
-    "name": "White",
-    "hex": "#ffffff",
-    "zType": "S-4722 "
-  },
-  {
-    "name": "Aqua",
-    "hex": "#5ec8e5",
-    "pantone": "637 U",
-    "zType": "S-4917"
-  },
-  {
-    "name": "Mint",
-    "hex": "#82d8d5",
-    "pantone": "324 U",
-    "zType": "S-6316"
-  },
-  {
-    "name": "Fluorescent Yellow",
-    "hex": "#ffe900",
-    "pantone": "803 U",
-    "zType": "S-7761"
-  },
-  {
-    "name": "Fluorescent Red",
-    "hex": "#ff4c65",
-    "pantone": "812 U",
-    "zType": "S-7762"
-  },
-  {
-    "name": "Fluorescent Green",
-    "hex": "#44d62c",
-    "pantone": "802 U",
-    "zType": "S-7763"
-  }
-]
-},{}],16:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -3915,7 +2676,7 @@ mixkey(Math.random(), pool);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],17:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*
  * A fast javascript implementation of simplex noise by Jonas Wagner
 
@@ -4390,7 +3151,7 @@ Better rank ordering method by Stefan Gustavson in 2012.
 
 })();
 
-},{}],18:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*! Tweakpane 3.1.10 (c) 2016 cocopon, licensed under the MIT license. */
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -12024,219 +10785,266 @@ Better rank ordering method by Stefan Gustavson in 2012.
 
 }));
 
-},{}],19:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 const canvasSketch = require('canvas-sketch');
-const math = require('canvas-sketch-util/math');
+// const math = require('canvas-sketch-util/math');
 const random = require('canvas-sketch-util/random');
-const Color = require('canvas-sketch-util/color');
-const risoColors = require('riso-colors');
 const Tweakpane = require('tweakpane');
 
-const seed = random.getRandomSeed();
 
 const settings = {
   dimensions: [ 1080, 1080 ],
   animate: true,
-  name: seed,
 };
 
 const params = {
-  sides: 3,
-  radius: 0.4,
-  degrees: -30,
-  rotate: 0,
-};
+  xs:'/',
+  sm:'/',
+  md:'/',
+  lg:'/',
+  randomchars:'/',
+}
 
-const sketch = ({ context, width, height }) => {
-  random.setSeed(seed);
-
-  let x, y, w, h, fill, stroke, blend, direction, velocity;
-
-  const num = 25;
-
-  const rects = [];
-
-  const rectColors = random.shuffle(risoColors).slice(0, 3);
-
-  const bgColor = random.pick(risoColors).hex;
-
-  const maskX= width * 0.5;
-  const maskY = height * 0.58;
+let manager, image;
 
 
-  for (let i = 0; i < num; i++) {
-    x = random.range(0, width);
-    y = random.range(0, height);
-    w = random.range(300, 500);
-    h = random.range(40,150);
+let text = 'A';
+let fontSize = 1200;
+let fontFamily = 'serif';
 
-    fill = random.pick(rectColors).hex;
-    stroke = random.pick(rectColors).hex;
+const typeCanvas = document.createElement('canvas');
+const typeContext = typeCanvas.getContext('2d');
 
-    blend = (random.value() > 0.5) ? 'overlay' : 'multiply';
-
-    direction = random.value() > 0.5 ? 1 : -1;
-
-    velocity = random.range(0.6, 1.5);
-
-    rects.push({x, y, w, h, fill, stroke, blend, direction, velocity});
-  }
+const sketch = ({ width, height }) => {
+  const cell = 10;
+  const cols = Math.floor(width / cell);
+  const rows = Math.floor(height / cell);
+  const numCells = cols * rows;
   
-  return ({ context, width, height, frame }) => {
-    const degrees = params.degrees;
-    // params.sides === 3 ? maskY = height * 0.58 : maskY = height * 0.5;
-    context.fillStyle = bgColor;
+  typeCanvas.width = cols;
+  typeCanvas.height = rows;
+  
+  return ({ context, width, height }) => {
+    typeContext.fillStyle = 'white';
+    typeContext.fillRect(0, 0, cols, rows);
+    
+    fontSize = cols * 1.2;
+
+    typeContext.save();
+    typeContext.drawImage(image, 0, 0, cols, rows); // draw image
+    typeContext.restore();
+
+    
+    // const metrics = typeContext.measureText(text);
+    // const mx = metrics.actualBoundingBoxLeft * -1;
+    // const my = metrics.actualBoundingBoxAscent * -1;
+    // const mw = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight;
+    // const mh = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    
+    // const tx = (cols - mw) * 0.5 -mx;
+    // const ty = (rows - mh) * 0.5 -my;
+    
+    // typeContext.save();
+    // typeContext.translate(tx, ty);
+    
+    // typeContext.beginPath();
+    // typeContext.rect(mx, my, mw, mh);
+    // typeContext.stroke();
+    
+    // typeContext.fillText(text, 0, 0)
+    // typeContext.restore();
+    
+    const typeData = typeContext.getImageData(0, 0, cols, rows).data;
+    
+    
+    context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
-
-    context.save();
-    context.translate(maskX, maskY);
-
-    drawPolygon({ context, radius: width * params.radius, sides: params.sides, rotate : params.rotate });
-    context.clip();
-
-    //update rects positions
-    rects.forEach(rect => {
-      rect.x += rect.direction * rect.velocity;
-      rect.y += -1 * rect.direction * rect.velocity;
-    });
-
-    // //wrap rects around not fineshed
-    // rects.forEach(rect => {
-    //   if (rect.x + rect.w <= 0) {
-    //     rect.x = width;
-    //   }
-    //   if (rect.x >= width) {
-    //     rect.x = -rect.w;
-    //   }
-    //   if (rect.y + rect.h <= 0) {
-    //     rect.y = height;
-    //   }
-    //   if (rect.y >= height) {
-    //     rect.y = -rect.h;
-    //   }
-    // });
-
-    //bounce rects
-    rects.forEach(rect => {
-      if (rect.x <= 0 >= width) {
-        rect.direction *= -1;
-      }
-      if (rect.y <= 0 || rect.y + rect.h >= height) {
-        rect.direction *= -1;
-      }
-    });
-
-    rects.forEach(({x, y, w, h, fill, stroke, blend}) => {
-      let shadowColor;
-
+    
+    context.textBaseline = 'middle';
+    context.textAlign = 'center';
+    
+    // context.drawImage(typeCanvas, 0, 0);
+    
+    for (let i = 0; i < numCells; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      
+      const x = col * cell;
+      const y = row * cell;
+      
+      const r = typeData[i * 4 + 0];
+      const g = typeData[i * 4 + 1];
+      const b = typeData[i * 4 + 2];
+      const a = typeData[i * 4 + 3];
+      
+      const glyph = getGlyph(r);
+      
+      context.font = `${cell * 2}px ${fontFamily}`;
+      if (Math.random() < 0.1) context.font = `${cell * 6}px ${fontFamily}`;
+      
+      context.fillStyle = 'white';
+      
       context.save();
-      context.translate(-maskX, -maskY);
       context.translate(x, y);
-      context.strokeStyle = stroke;
-      context.fillStyle = fill;
-      context.lineWidth = 10;
-
-      context.globalCompositeOperation = blend;
-
-      drawSkewedRect({context, w, h, degrees });
-
-      shadowColor = Color.offsetHSL(fill, 0, 0, -20);
-      shadowColor.rgba[3] = 0.5;
-
-      context.shadowColor = Color.style(shadowColor.rgba);
-      context.shadowOffsetX = -10;
-      context.shadowOffsetY = 20;
-
-      context.fill();
-
-      context.shadowColor = null;
-      context.stroke();
-
-      context.globalCompositeOperation = 'source-over';
-
-      context.lineWidth = 2;
-      context.strokeStyle = 'white';
-      context.stroke();
-
+      context.translate(cell * 0.5, cell * 0.5);
+      
+      // context.fillRect(0, 0, cell, cell);
+      context.fillStyle = `rgb(${r}, ${g}, ${b}, ${a})`;
+      context.fillText(glyph, 0, 0)
+      
       context.restore();
-    });
+    }
 
-    context.restore();
+    for (let i = 0; i < numCells; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      
+      const x = col * cell;
+      const y = row * cell;
+      
+      const r = typeData[i * 4 + 0];
+      const g = typeData[i * 4 + 1];
+      const b = typeData[i * 4 + 2];
+      const a = typeData[i * 4 + 3];
+      
+      const glyph = getGlyph(g);
+      
+      context.font = `${cell * 2}px ${fontFamily}`;
+      if (Math.random() < 0.1) context.font = `${cell * 6}px ${fontFamily}`;
+      
+      context.fillStyle = 'white';
+      
+      context.save();
+      context.translate(x, y);
+      context.translate(cell * 0.5, cell * 0.5);
+      
+      // context.fillRect(0, 0, cell, cell);
+      context.fillStyle = `rgb(${r}, ${g}, ${b}, ${a})`;
 
-    context.save();
-    context.translate(maskX, maskY);
-    context.lineWidth = 20;
-
-    drawPolygon({ context, radius: width * params.radius - context.lineWidth, sides: params.sides, rotate : params.rotate });
+      context.fillText(glyph, 0, 0)
+      
+      context.restore();
+    }
     
-    context.globalCompositeOperation = 'color-burn';
-    context.strokeStyle = rectColors[0].hex;
-    context.stroke();
-    
-    context.restore();
-  };
+    for (let i = 0; i < numCells; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      
+      const x = col * cell;
+      const y = row * cell;
+      
+      const r = typeData[i * 4 + 0];
+      const g = typeData[i * 4 + 1];
+      const b = typeData[i * 4 + 2];
+      const a = typeData[i * 4 + 3];
+      
+      const glyph = getGlyph(b);
+      
+      context.font = `${cell * 2}px ${fontFamily}`;
+      if (Math.random() < 0.1) context.font = `${cell * 6}px ${fontFamily}`;
+      
+      context.fillStyle = 'white';
+      
+      context.save();
+      context.translate(x, y);
+      context.translate(cell * 0.5, cell * 0.5);
+      
+      // context.fillRect(0, 0, cell, cell);
+      context.fillStyle = `rgb(${r}, ${g}, ${b}, ${a})`;
+
+      context.fillText(glyph, 0, 0)
+      
+      context.restore();
+    }
+
+    for (let i = 0; i < numCells; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      
+      const x = col * cell;
+      const y = row * cell;
+      
+      const r = typeData[i * 4 + 0];
+      const g = typeData[i * 4 + 1];
+      const b = typeData[i * 4 + 2];
+      const a = typeData[i * 4 + 3];
+      
+      const glyph = getGlyph(a);
+      
+      context.font = `${cell * 2}px ${fontFamily}`;
+      if (Math.random() < 0.1) context.font = `${cell * 6}px ${fontFamily}`;
+      
+      context.fillStyle = 'white';
+      
+      context.save();
+      context.translate(x, y);
+      context.translate(cell * 0.5, cell * 0.5);
+      
+      // context.fillRect(0, 0, cell, cell);
+      context.fillStyle = `rgb(${r}, ${g}, ${b}, ${a})`;
+      context.fillText(glyph, 0, 0)
+      
+      context.restore();
+    }
+  };  
 };
 
-const drawSkewedRect = ({context, w=600, h=200, degrees= -45}) => {  
-  const angle = math.degToRad(degrees);
-  const rx = Math.cos(angle) * w;
-  const ry = Math.sin(angle) * w;
-  
-  context.save();
-  context.translate(rx * -0.5, (ry + h) * -0.5);
-  
-  context.beginPath();
-  context.moveTo(0,0);
-  context.lineTo(rx,ry);
-  context.lineTo(rx, ry+h);
-  context.lineTo(0,h);
-  context.closePath();
-  context.stroke();
+const getGlyph = (v) => {
+  if (v < 50) return params.xs;
+  if (v < 100) return params.sm;
+  if (v < 150) return params.md;
+  if (v < 200) return params.lg;
 
-  context.restore();
+  const glyphs = params.randomchars.split('');
+
+  return random.pick(glyphs);
 };
 
-const drawPolygon = ({ context, radius = 100 ,sides = 3, rotate = 0}) => {
-  const slice = (Math.PI * 2) / sides;
-
-  context.rotate(slice * rotate);
-
-  context.beginPath();
-  context.moveTo(0, -radius);
-
-  for (let i = 1; i < sides; i++) {
-    const theta = i * slice - Math.PI * 0.5;
-    context.lineTo(Math.cos(theta) * radius, Math.sin(theta) * radius);
+  const onKeyUp = (e) => {
+    text = e.key.toUpperCase();
+    text === 'ENTER' && manager.render();
   }
-
-  context.closePath();
-};
-
-const createPane = () => {
-  const pane = new Tweakpane.Pane();
-  let folder;
   
-  folder = pane.addFolder({ title: 'Polygon Mask' });
-  folder.addInput(params, 'sides', { min: 3, max: 120, step: 1 });
-  folder.addInput(params, 'radius', { min: 0, max: 1, step: 0.01 });
-  folder.addInput(params, 'rotate', { min: 0, max: 4, step: 0.01 });
+  document.addEventListener('keyup', onKeyUp);
   
-  folder = pane.addFolder({ title: 'Rectangles' });
-  folder.addInput(params, 'degrees', { min: -90, max: 90, step: 1 });
+  const loadMeSomeImage = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject();
+      img.src = url;
+    });
+  };
+  
+  const start = async () => {
+    const url = '../public/images/rain.png';
+    image = await loadMeSomeImage(url);
+    manager = await canvasSketch(sketch, settings);
+  };
 
-};
+  const createPane = () => {
+    const pane = new Tweakpane.Pane();
+    let folder;
+    
+    folder = pane.addFolder({ title: 'Glyphs - Press ENTER to apply changes' });
+    folder.addInput(params, 'xs', { label: 'xs' });
+    folder.addInput(params, 'sm', { label: 'sm' });
+    folder.addInput(params, 'md', { label: 'md' });
+    folder.addInput(params, 'lg', { label: 'lg' });
+    folder.addInput(params, 'randomchars', { label: 'randomchars' });
+  };
+  
+  createPane();
+  
+  start();
 
-createPane();
-
-canvasSketch(sketch, settings);
-
-},{"canvas-sketch":11,"canvas-sketch-util/color":1,"canvas-sketch-util/math":9,"canvas-sketch-util/random":10,"riso-colors":15,"tweakpane":18}],20:[function(require,module,exports){
+},{"canvas-sketch":2,"canvas-sketch-util/random":1,"tweakpane":6}],8:[function(require,module,exports){
 (function (global){(function (){
 
 global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}]},{},[19,20])
+},{}]},{},[7,8])
 
-//# sourceMappingURL=sketch--06.js.map
+//# sourceMappingURL=sketch-05.js.map

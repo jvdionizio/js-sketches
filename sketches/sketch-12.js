@@ -225,7 +225,7 @@ module.exports = {
   expand4D: expandVector(4)
 };
 
-},{"./lib/wrap":1,"defined":5}],3:[function(require,module,exports){
+},{"./lib/wrap":1,"defined":13}],3:[function(require,module,exports){
 var seedRandom = require('seed-random');
 var SimplexNoise = require('simplex-noise');
 var defined = require('defined');
@@ -555,7 +555,7 @@ function createRandom (defaultSeed) {
 
 module.exports = createRandom();
 
-},{"defined":5,"seed-random":6,"simplex-noise":7}],4:[function(require,module,exports){
+},{"defined":13,"seed-random":47,"simplex-noise":48}],4:[function(require,module,exports){
 (function (global){(function (){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -2715,6 +2715,754 @@ module.exports = createRandom();
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
 },{}],5:[function(require,module,exports){
+module.exports = clamp
+
+function clamp(value, min, max) {
+  return min < max
+    ? (value < min ? min : value > max ? max : value)
+    : (value < max ? max : value > min ? min : value)
+}
+
+},{}],6:[function(require,module,exports){
+'use strict'
+
+/**
+ * @module  color-interpolate
+ * Pick color from palette by index
+ */
+
+const parse = require('color-parse');
+const hsl = require('color-space/hsl');
+const lerp = require('lerp');
+const clamp = require('clamp');
+
+module.exports = interpolate;
+
+function interpolate (palette) {
+	palette = palette.map(function(c) {
+		c = parse(c);
+		if (c.space != 'rgb') {
+			if (c.space != 'hsl') throw 'c.space' + 'space is not supported.';
+			c.values = hsl.rgb(c.values);
+		}
+		c.values.push(c.alpha);
+		return c.values;
+	});
+
+	return function(t, mix) {
+		mix = mix || lerp;
+		t = clamp(t, 0, 1);
+
+		var idx = ( palette.length - 1 ) * t,
+			lIdx = Math.floor( idx ),
+			rIdx = Math.ceil( idx );
+
+		t = idx - lIdx;
+
+		var lColor = palette[lIdx], rColor = palette[rIdx];
+
+		var result = lColor.map(function(v, i) {
+			v = mix(v, rColor[i], t);
+			if (i < 3) v = Math.round(v);
+			return v;
+		});
+
+		if (result[3] === 1) {
+			return 'rgb('+result.slice(0,3)+')';
+		}
+		return 'rgba('+result+')';
+	};
+}
+
+},{"clamp":5,"color-parse":8,"color-space/hsl":9,"lerp":46}],7:[function(require,module,exports){
+'use strict'
+
+module.exports = {
+	"aliceblue": [240, 248, 255],
+	"antiquewhite": [250, 235, 215],
+	"aqua": [0, 255, 255],
+	"aquamarine": [127, 255, 212],
+	"azure": [240, 255, 255],
+	"beige": [245, 245, 220],
+	"bisque": [255, 228, 196],
+	"black": [0, 0, 0],
+	"blanchedalmond": [255, 235, 205],
+	"blue": [0, 0, 255],
+	"blueviolet": [138, 43, 226],
+	"brown": [165, 42, 42],
+	"burlywood": [222, 184, 135],
+	"cadetblue": [95, 158, 160],
+	"chartreuse": [127, 255, 0],
+	"chocolate": [210, 105, 30],
+	"coral": [255, 127, 80],
+	"cornflowerblue": [100, 149, 237],
+	"cornsilk": [255, 248, 220],
+	"crimson": [220, 20, 60],
+	"cyan": [0, 255, 255],
+	"darkblue": [0, 0, 139],
+	"darkcyan": [0, 139, 139],
+	"darkgoldenrod": [184, 134, 11],
+	"darkgray": [169, 169, 169],
+	"darkgreen": [0, 100, 0],
+	"darkgrey": [169, 169, 169],
+	"darkkhaki": [189, 183, 107],
+	"darkmagenta": [139, 0, 139],
+	"darkolivegreen": [85, 107, 47],
+	"darkorange": [255, 140, 0],
+	"darkorchid": [153, 50, 204],
+	"darkred": [139, 0, 0],
+	"darksalmon": [233, 150, 122],
+	"darkseagreen": [143, 188, 143],
+	"darkslateblue": [72, 61, 139],
+	"darkslategray": [47, 79, 79],
+	"darkslategrey": [47, 79, 79],
+	"darkturquoise": [0, 206, 209],
+	"darkviolet": [148, 0, 211],
+	"deeppink": [255, 20, 147],
+	"deepskyblue": [0, 191, 255],
+	"dimgray": [105, 105, 105],
+	"dimgrey": [105, 105, 105],
+	"dodgerblue": [30, 144, 255],
+	"firebrick": [178, 34, 34],
+	"floralwhite": [255, 250, 240],
+	"forestgreen": [34, 139, 34],
+	"fuchsia": [255, 0, 255],
+	"gainsboro": [220, 220, 220],
+	"ghostwhite": [248, 248, 255],
+	"gold": [255, 215, 0],
+	"goldenrod": [218, 165, 32],
+	"gray": [128, 128, 128],
+	"green": [0, 128, 0],
+	"greenyellow": [173, 255, 47],
+	"grey": [128, 128, 128],
+	"honeydew": [240, 255, 240],
+	"hotpink": [255, 105, 180],
+	"indianred": [205, 92, 92],
+	"indigo": [75, 0, 130],
+	"ivory": [255, 255, 240],
+	"khaki": [240, 230, 140],
+	"lavender": [230, 230, 250],
+	"lavenderblush": [255, 240, 245],
+	"lawngreen": [124, 252, 0],
+	"lemonchiffon": [255, 250, 205],
+	"lightblue": [173, 216, 230],
+	"lightcoral": [240, 128, 128],
+	"lightcyan": [224, 255, 255],
+	"lightgoldenrodyellow": [250, 250, 210],
+	"lightgray": [211, 211, 211],
+	"lightgreen": [144, 238, 144],
+	"lightgrey": [211, 211, 211],
+	"lightpink": [255, 182, 193],
+	"lightsalmon": [255, 160, 122],
+	"lightseagreen": [32, 178, 170],
+	"lightskyblue": [135, 206, 250],
+	"lightslategray": [119, 136, 153],
+	"lightslategrey": [119, 136, 153],
+	"lightsteelblue": [176, 196, 222],
+	"lightyellow": [255, 255, 224],
+	"lime": [0, 255, 0],
+	"limegreen": [50, 205, 50],
+	"linen": [250, 240, 230],
+	"magenta": [255, 0, 255],
+	"maroon": [128, 0, 0],
+	"mediumaquamarine": [102, 205, 170],
+	"mediumblue": [0, 0, 205],
+	"mediumorchid": [186, 85, 211],
+	"mediumpurple": [147, 112, 219],
+	"mediumseagreen": [60, 179, 113],
+	"mediumslateblue": [123, 104, 238],
+	"mediumspringgreen": [0, 250, 154],
+	"mediumturquoise": [72, 209, 204],
+	"mediumvioletred": [199, 21, 133],
+	"midnightblue": [25, 25, 112],
+	"mintcream": [245, 255, 250],
+	"mistyrose": [255, 228, 225],
+	"moccasin": [255, 228, 181],
+	"navajowhite": [255, 222, 173],
+	"navy": [0, 0, 128],
+	"oldlace": [253, 245, 230],
+	"olive": [128, 128, 0],
+	"olivedrab": [107, 142, 35],
+	"orange": [255, 165, 0],
+	"orangered": [255, 69, 0],
+	"orchid": [218, 112, 214],
+	"palegoldenrod": [238, 232, 170],
+	"palegreen": [152, 251, 152],
+	"paleturquoise": [175, 238, 238],
+	"palevioletred": [219, 112, 147],
+	"papayawhip": [255, 239, 213],
+	"peachpuff": [255, 218, 185],
+	"peru": [205, 133, 63],
+	"pink": [255, 192, 203],
+	"plum": [221, 160, 221],
+	"powderblue": [176, 224, 230],
+	"purple": [128, 0, 128],
+	"rebeccapurple": [102, 51, 153],
+	"red": [255, 0, 0],
+	"rosybrown": [188, 143, 143],
+	"royalblue": [65, 105, 225],
+	"saddlebrown": [139, 69, 19],
+	"salmon": [250, 128, 114],
+	"sandybrown": [244, 164, 96],
+	"seagreen": [46, 139, 87],
+	"seashell": [255, 245, 238],
+	"sienna": [160, 82, 45],
+	"silver": [192, 192, 192],
+	"skyblue": [135, 206, 235],
+	"slateblue": [106, 90, 205],
+	"slategray": [112, 128, 144],
+	"slategrey": [112, 128, 144],
+	"snow": [255, 250, 250],
+	"springgreen": [0, 255, 127],
+	"steelblue": [70, 130, 180],
+	"tan": [210, 180, 140],
+	"teal": [0, 128, 128],
+	"thistle": [216, 191, 216],
+	"tomato": [255, 99, 71],
+	"turquoise": [64, 224, 208],
+	"violet": [238, 130, 238],
+	"wheat": [245, 222, 179],
+	"white": [255, 255, 255],
+	"whitesmoke": [245, 245, 245],
+	"yellow": [255, 255, 0],
+	"yellowgreen": [154, 205, 50]
+};
+
+},{}],8:[function(require,module,exports){
+/**
+ * @module color-parse
+ */
+
+'use strict'
+
+var names = require('color-name')
+
+module.exports = parse
+
+/**
+ * Base hues
+ * http://dev.w3.org/csswg/css-color/#typedef-named-hue
+ */
+//FIXME: use external hue detector
+var baseHues = {
+	red: 0,
+	orange: 60,
+	yellow: 120,
+	green: 180,
+	blue: 240,
+	purple: 300
+}
+
+/**
+ * Parse color from the string passed
+ *
+ * @return {Object} A space indicator `space`, an array `values` and `alpha`
+ */
+function parse (cstr) {
+	var m, parts = [], alpha = 1, space
+
+	if (typeof cstr === 'string') {
+		//keyword
+		if (names[cstr]) {
+			parts = names[cstr].slice()
+			space = 'rgb'
+		}
+
+		//reserved words
+		else if (cstr === 'transparent') {
+			alpha = 0
+			space = 'rgb'
+			parts = [0,0,0]
+		}
+
+		//hex
+		else if (/^#[A-Fa-f0-9]+$/.test(cstr)) {
+			var base = cstr.slice(1)
+			var size = base.length
+			var isShort = size <= 4
+			alpha = 1
+
+			if (isShort) {
+				parts = [
+					parseInt(base[0] + base[0], 16),
+					parseInt(base[1] + base[1], 16),
+					parseInt(base[2] + base[2], 16)
+				]
+				if (size === 4) {
+					alpha = parseInt(base[3] + base[3], 16) / 255
+				}
+			}
+			else {
+				parts = [
+					parseInt(base[0] + base[1], 16),
+					parseInt(base[2] + base[3], 16),
+					parseInt(base[4] + base[5], 16)
+				]
+				if (size === 8) {
+					alpha = parseInt(base[6] + base[7], 16) / 255
+				}
+			}
+
+			if (!parts[0]) parts[0] = 0
+			if (!parts[1]) parts[1] = 0
+			if (!parts[2]) parts[2] = 0
+
+			space = 'rgb'
+		}
+
+		//color space
+		else if (m = /^((?:rgb|hs[lvb]|hwb|cmyk?|xy[zy]|gray|lab|lchu?v?|[ly]uv|lms)a?)\s*\(([^\)]*)\)/.exec(cstr)) {
+			var name = m[1]
+			var isRGB = name === 'rgb'
+			var base = name.replace(/a$/, '')
+			space = base
+			var size = base === 'cmyk' ? 4 : base === 'gray' ? 1 : 3
+			parts = m[2].trim()
+				.split(/\s*[,\/]\s*|\s+/)
+				.map(function (x, i) {
+					//<percentage>
+					if (/%$/.test(x)) {
+						//alpha
+						if (i === size)	return parseFloat(x) / 100
+						//rgb
+						if (base === 'rgb') return parseFloat(x) * 255 / 100
+						return parseFloat(x)
+					}
+					//hue
+					else if (base[i] === 'h') {
+						//<deg>
+						if (/deg$/.test(x)) {
+							return parseFloat(x)
+						}
+						//<base-hue>
+						else if (baseHues[x] !== undefined) {
+							return baseHues[x]
+						}
+					}
+					return parseFloat(x)
+				})
+
+			if (name === base) parts.push(1)
+			alpha = (isRGB) ? 1 : (parts[size] === undefined) ? 1 : parts[size]
+			parts = parts.slice(0, size)
+		}
+
+		//named channels case
+		else if (cstr.length > 10 && /[0-9](?:\s|\/)/.test(cstr)) {
+			parts = cstr.match(/([0-9]+)/g).map(function (value) {
+				return parseFloat(value)
+			})
+
+			space = cstr.match(/([a-z])/ig).join('').toLowerCase()
+		}
+	}
+
+	//numeric case
+	else if (!isNaN(cstr)) {
+		space = 'rgb'
+		parts = [cstr >>> 16, (cstr & 0x00ff00) >>> 8, cstr & 0x0000ff]
+	}
+
+	//array-like
+	else if (Array.isArray(cstr) || cstr.length) {
+		parts = [cstr[0], cstr[1], cstr[2]]
+		space = 'rgb'
+		alpha = cstr.length === 4 ? cstr[3] : 1
+	}
+
+	//object case - detects css cases of rgb and hsl
+	else if (cstr instanceof Object) {
+		if (cstr.r != null || cstr.red != null || cstr.R != null) {
+			space = 'rgb'
+			parts = [
+				cstr.r || cstr.red || cstr.R || 0,
+				cstr.g || cstr.green || cstr.G || 0,
+				cstr.b || cstr.blue || cstr.B || 0
+			]
+		}
+		else {
+			space = 'hsl'
+			parts = [
+				cstr.h || cstr.hue || cstr.H || 0,
+				cstr.s || cstr.saturation || cstr.S || 0,
+				cstr.l || cstr.lightness || cstr.L || cstr.b || cstr.brightness
+			]
+		}
+
+		alpha = cstr.a || cstr.alpha || cstr.opacity || 1
+
+		if (cstr.opacity != null) alpha /= 100
+	}
+
+	return {
+		space: space,
+		values: parts,
+		alpha: alpha
+	}
+}
+
+},{"color-name":7}],9:[function(require,module,exports){
+/**
+ * @module color-space/hsl
+ */
+'use strict'
+
+var rgb = require('./rgb');
+
+module.exports = {
+	name: 'hsl',
+	min: [0,0,0],
+	max: [360,100,100],
+	channel: ['hue', 'saturation', 'lightness'],
+	alias: ['HSL'],
+
+	rgb: function(hsl) {
+		var h = hsl[0] / 360,
+				s = hsl[1] / 100,
+				l = hsl[2] / 100,
+				t1, t2, t3, rgb, val;
+
+		if (s === 0) {
+			val = l * 255;
+			return [val, val, val];
+		}
+
+		if (l < 0.5) {
+			t2 = l * (1 + s);
+		}
+		else {
+			t2 = l + s - l * s;
+		}
+		t1 = 2 * l - t2;
+
+		rgb = [0, 0, 0];
+		for (var i = 0; i < 3; i++) {
+			t3 = h + 1 / 3 * - (i - 1);
+			if (t3 < 0) {
+				t3++;
+			}
+			else if (t3 > 1) {
+				t3--;
+			}
+
+			if (6 * t3 < 1) {
+				val = t1 + (t2 - t1) * 6 * t3;
+			}
+			else if (2 * t3 < 1) {
+				val = t2;
+			}
+			else if (3 * t3 < 2) {
+				val = t1 + (t2 - t1) * (2 / 3 - t3) * 6;
+			}
+			else {
+				val = t1;
+			}
+
+			rgb[i] = val * 255;
+		}
+
+		return rgb;
+	}
+};
+
+
+//extend rgb
+rgb.hsl = function(rgb) {
+	var r = rgb[0]/255,
+			g = rgb[1]/255,
+			b = rgb[2]/255,
+			min = Math.min(r, g, b),
+			max = Math.max(r, g, b),
+			delta = max - min,
+			h, s, l;
+
+	if (max === min) {
+		h = 0;
+	}
+	else if (r === max) {
+		h = (g - b) / delta;
+	}
+	else if (g === max) {
+		h = 2 + (b - r) / delta;
+	}
+	else if (b === max) {
+		h = 4 + (r - g)/ delta;
+	}
+
+	h = Math.min(h * 60, 360);
+
+	if (h < 0) {
+		h += 360;
+	}
+
+	l = (min + max) / 2;
+
+	if (max === min) {
+		s = 0;
+	}
+	else if (l <= 0.5) {
+		s = delta / (max + min);
+	}
+	else {
+		s = delta / (2 - max - min);
+	}
+
+	return [h, s * 100, l * 100];
+};
+
+},{"./rgb":10}],10:[function(require,module,exports){
+/**
+ * RGB space.
+ *
+ * @module  color-space/rgb
+ */
+'use strict'
+
+module.exports = {
+	name: 'rgb',
+	min: [0,0,0],
+	max: [255,255,255],
+	channel: ['red', 'green', 'blue'],
+	alias: ['RGB']
+};
+
+},{}],11:[function(require,module,exports){
+module.exports={
+	"jet":[{"index":0,"rgb":[0,0,131]},{"index":0.125,"rgb":[0,60,170]},{"index":0.375,"rgb":[5,255,255]},{"index":0.625,"rgb":[255,255,0]},{"index":0.875,"rgb":[250,0,0]},{"index":1,"rgb":[128,0,0]}],
+
+	"hsv":[{"index":0,"rgb":[255,0,0]},{"index":0.169,"rgb":[253,255,2]},{"index":0.173,"rgb":[247,255,2]},{"index":0.337,"rgb":[0,252,4]},{"index":0.341,"rgb":[0,252,10]},{"index":0.506,"rgb":[1,249,255]},{"index":0.671,"rgb":[2,0,253]},{"index":0.675,"rgb":[8,0,253]},{"index":0.839,"rgb":[255,0,251]},{"index":0.843,"rgb":[255,0,245]},{"index":1,"rgb":[255,0,6]}],
+
+	"hot":[{"index":0,"rgb":[0,0,0]},{"index":0.3,"rgb":[230,0,0]},{"index":0.6,"rgb":[255,210,0]},{"index":1,"rgb":[255,255,255]}],
+
+	"spring":[{"index":0,"rgb":[255,0,255]},{"index":1,"rgb":[255,255,0]}],
+
+	"summer":[{"index":0,"rgb":[0,128,102]},{"index":1,"rgb":[255,255,102]}],
+
+	"autumn":[{"index":0,"rgb":[255,0,0]},{"index":1,"rgb":[255,255,0]}],
+
+	"winter":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[0,255,128]}],
+
+	"bone":[{"index":0,"rgb":[0,0,0]},{"index":0.376,"rgb":[84,84,116]},{"index":0.753,"rgb":[169,200,200]},{"index":1,"rgb":[255,255,255]}],
+
+	"copper":[{"index":0,"rgb":[0,0,0]},{"index":0.804,"rgb":[255,160,102]},{"index":1,"rgb":[255,199,127]}],
+
+	"greys":[{"index":0,"rgb":[0,0,0]},{"index":1,"rgb":[255,255,255]}],
+
+	"yignbu":[{"index":0,"rgb":[8,29,88]},{"index":0.125,"rgb":[37,52,148]},{"index":0.25,"rgb":[34,94,168]},{"index":0.375,"rgb":[29,145,192]},{"index":0.5,"rgb":[65,182,196]},{"index":0.625,"rgb":[127,205,187]},{"index":0.75,"rgb":[199,233,180]},{"index":0.875,"rgb":[237,248,217]},{"index":1,"rgb":[255,255,217]}],
+
+	"greens":[{"index":0,"rgb":[0,68,27]},{"index":0.125,"rgb":[0,109,44]},{"index":0.25,"rgb":[35,139,69]},{"index":0.375,"rgb":[65,171,93]},{"index":0.5,"rgb":[116,196,118]},{"index":0.625,"rgb":[161,217,155]},{"index":0.75,"rgb":[199,233,192]},{"index":0.875,"rgb":[229,245,224]},{"index":1,"rgb":[247,252,245]}],
+
+	"yiorrd":[{"index":0,"rgb":[128,0,38]},{"index":0.125,"rgb":[189,0,38]},{"index":0.25,"rgb":[227,26,28]},{"index":0.375,"rgb":[252,78,42]},{"index":0.5,"rgb":[253,141,60]},{"index":0.625,"rgb":[254,178,76]},{"index":0.75,"rgb":[254,217,118]},{"index":0.875,"rgb":[255,237,160]},{"index":1,"rgb":[255,255,204]}],
+
+	"bluered":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[255,0,0]}],
+
+	"rdbu":[{"index":0,"rgb":[5,10,172]},{"index":0.35,"rgb":[106,137,247]},{"index":0.5,"rgb":[190,190,190]},{"index":0.6,"rgb":[220,170,132]},{"index":0.7,"rgb":[230,145,90]},{"index":1,"rgb":[178,10,28]}],
+
+	"picnic":[{"index":0,"rgb":[0,0,255]},{"index":0.1,"rgb":[51,153,255]},{"index":0.2,"rgb":[102,204,255]},{"index":0.3,"rgb":[153,204,255]},{"index":0.4,"rgb":[204,204,255]},{"index":0.5,"rgb":[255,255,255]},{"index":0.6,"rgb":[255,204,255]},{"index":0.7,"rgb":[255,153,255]},{"index":0.8,"rgb":[255,102,204]},{"index":0.9,"rgb":[255,102,102]},{"index":1,"rgb":[255,0,0]}],
+
+	"rainbow":[{"index":0,"rgb":[150,0,90]},{"index":0.125,"rgb":[0,0,200]},{"index":0.25,"rgb":[0,25,255]},{"index":0.375,"rgb":[0,152,255]},{"index":0.5,"rgb":[44,255,150]},{"index":0.625,"rgb":[151,255,0]},{"index":0.75,"rgb":[255,234,0]},{"index":0.875,"rgb":[255,111,0]},{"index":1,"rgb":[255,0,0]}],
+
+	"portland":[{"index":0,"rgb":[12,51,131]},{"index":0.25,"rgb":[10,136,186]},{"index":0.5,"rgb":[242,211,56]},{"index":0.75,"rgb":[242,143,56]},{"index":1,"rgb":[217,30,30]}],
+
+	"blackbody":[{"index":0,"rgb":[0,0,0]},{"index":0.2,"rgb":[230,0,0]},{"index":0.4,"rgb":[230,210,0]},{"index":0.7,"rgb":[255,255,255]},{"index":1,"rgb":[160,200,255]}],
+
+	"earth":[{"index":0,"rgb":[0,0,130]},{"index":0.1,"rgb":[0,180,180]},{"index":0.2,"rgb":[40,210,40]},{"index":0.4,"rgb":[230,230,50]},{"index":0.6,"rgb":[120,70,20]},{"index":1,"rgb":[255,255,255]}],
+
+	"electric":[{"index":0,"rgb":[0,0,0]},{"index":0.15,"rgb":[30,0,100]},{"index":0.4,"rgb":[120,0,100]},{"index":0.6,"rgb":[160,90,0]},{"index":0.8,"rgb":[230,200,0]},{"index":1,"rgb":[255,250,220]}],
+
+	"alpha": [{"index":0, "rgb": [255,255,255,0]},{"index":1, "rgb": [255,255,255,1]}],
+
+	"viridis": [{"index":0,"rgb":[68,1,84]},{"index":0.13,"rgb":[71,44,122]},{"index":0.25,"rgb":[59,81,139]},{"index":0.38,"rgb":[44,113,142]},{"index":0.5,"rgb":[33,144,141]},{"index":0.63,"rgb":[39,173,129]},{"index":0.75,"rgb":[92,200,99]},{"index":0.88,"rgb":[170,220,50]},{"index":1,"rgb":[253,231,37]}],
+
+	"inferno": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[31,12,72]},{"index":0.25,"rgb":[85,15,109]},{"index":0.38,"rgb":[136,34,106]},{"index":0.5,"rgb":[186,54,85]},{"index":0.63,"rgb":[227,89,51]},{"index":0.75,"rgb":[249,140,10]},{"index":0.88,"rgb":[249,201,50]},{"index":1,"rgb":[252,255,164]}],
+
+	"magma": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[28,16,68]},{"index":0.25,"rgb":[79,18,123]},{"index":0.38,"rgb":[129,37,129]},{"index":0.5,"rgb":[181,54,122]},{"index":0.63,"rgb":[229,80,100]},{"index":0.75,"rgb":[251,135,97]},{"index":0.88,"rgb":[254,194,135]},{"index":1,"rgb":[252,253,191]}],
+
+	"plasma": [{"index":0,"rgb":[13,8,135]},{"index":0.13,"rgb":[75,3,161]},{"index":0.25,"rgb":[125,3,168]},{"index":0.38,"rgb":[168,34,150]},{"index":0.5,"rgb":[203,70,121]},{"index":0.63,"rgb":[229,107,93]},{"index":0.75,"rgb":[248,148,65]},{"index":0.88,"rgb":[253,195,40]},{"index":1,"rgb":[240,249,33]}],
+
+	"warm": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[172,0,187]},{"index":0.25,"rgb":[219,0,170]},{"index":0.38,"rgb":[255,0,130]},{"index":0.5,"rgb":[255,63,74]},{"index":0.63,"rgb":[255,123,0]},{"index":0.75,"rgb":[234,176,0]},{"index":0.88,"rgb":[190,228,0]},{"index":1,"rgb":[147,255,0]}],
+
+	"cool": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[116,0,218]},{"index":0.25,"rgb":[98,74,237]},{"index":0.38,"rgb":[68,146,231]},{"index":0.5,"rgb":[0,204,197]},{"index":0.63,"rgb":[0,247,146]},{"index":0.75,"rgb":[0,255,88]},{"index":0.88,"rgb":[40,255,8]},{"index":1,"rgb":[147,255,0]}],
+
+	"rainbow-soft": [{"index":0,"rgb":[125,0,179]},{"index":0.1,"rgb":[199,0,180]},{"index":0.2,"rgb":[255,0,121]},{"index":0.3,"rgb":[255,108,0]},{"index":0.4,"rgb":[222,194,0]},{"index":0.5,"rgb":[150,255,0]},{"index":0.6,"rgb":[0,255,55]},{"index":0.7,"rgb":[0,246,150]},{"index":0.8,"rgb":[50,167,222]},{"index":0.9,"rgb":[103,51,235]},{"index":1,"rgb":[124,0,186]}],
+
+	"bathymetry": [{"index":0,"rgb":[40,26,44]},{"index":0.13,"rgb":[59,49,90]},{"index":0.25,"rgb":[64,76,139]},{"index":0.38,"rgb":[63,110,151]},{"index":0.5,"rgb":[72,142,158]},{"index":0.63,"rgb":[85,174,163]},{"index":0.75,"rgb":[120,206,163]},{"index":0.88,"rgb":[187,230,172]},{"index":1,"rgb":[253,254,204]}],
+
+	"cdom": [{"index":0,"rgb":[47,15,62]},{"index":0.13,"rgb":[87,23,86]},{"index":0.25,"rgb":[130,28,99]},{"index":0.38,"rgb":[171,41,96]},{"index":0.5,"rgb":[206,67,86]},{"index":0.63,"rgb":[230,106,84]},{"index":0.75,"rgb":[242,149,103]},{"index":0.88,"rgb":[249,193,135]},{"index":1,"rgb":[254,237,176]}],
+
+	"chlorophyll": [{"index":0,"rgb":[18,36,20]},{"index":0.13,"rgb":[25,63,41]},{"index":0.25,"rgb":[24,91,59]},{"index":0.38,"rgb":[13,119,72]},{"index":0.5,"rgb":[18,148,80]},{"index":0.63,"rgb":[80,173,89]},{"index":0.75,"rgb":[132,196,122]},{"index":0.88,"rgb":[175,221,162]},{"index":1,"rgb":[215,249,208]}],
+
+	"density": [{"index":0,"rgb":[54,14,36]},{"index":0.13,"rgb":[89,23,80]},{"index":0.25,"rgb":[110,45,132]},{"index":0.38,"rgb":[120,77,178]},{"index":0.5,"rgb":[120,113,213]},{"index":0.63,"rgb":[115,151,228]},{"index":0.75,"rgb":[134,185,227]},{"index":0.88,"rgb":[177,214,227]},{"index":1,"rgb":[230,241,241]}],
+
+	"freesurface-blue": [{"index":0,"rgb":[30,4,110]},{"index":0.13,"rgb":[47,14,176]},{"index":0.25,"rgb":[41,45,236]},{"index":0.38,"rgb":[25,99,212]},{"index":0.5,"rgb":[68,131,200]},{"index":0.63,"rgb":[114,156,197]},{"index":0.75,"rgb":[157,181,203]},{"index":0.88,"rgb":[200,208,216]},{"index":1,"rgb":[241,237,236]}],
+
+	"freesurface-red": [{"index":0,"rgb":[60,9,18]},{"index":0.13,"rgb":[100,17,27]},{"index":0.25,"rgb":[142,20,29]},{"index":0.38,"rgb":[177,43,27]},{"index":0.5,"rgb":[192,87,63]},{"index":0.63,"rgb":[205,125,105]},{"index":0.75,"rgb":[216,162,148]},{"index":0.88,"rgb":[227,199,193]},{"index":1,"rgb":[241,237,236]}],
+
+	"oxygen": [{"index":0,"rgb":[64,5,5]},{"index":0.13,"rgb":[106,6,15]},{"index":0.25,"rgb":[144,26,7]},{"index":0.38,"rgb":[168,64,3]},{"index":0.5,"rgb":[188,100,4]},{"index":0.63,"rgb":[206,136,11]},{"index":0.75,"rgb":[220,174,25]},{"index":0.88,"rgb":[231,215,44]},{"index":1,"rgb":[248,254,105]}],
+
+	"par": [{"index":0,"rgb":[51,20,24]},{"index":0.13,"rgb":[90,32,35]},{"index":0.25,"rgb":[129,44,34]},{"index":0.38,"rgb":[159,68,25]},{"index":0.5,"rgb":[182,99,19]},{"index":0.63,"rgb":[199,134,22]},{"index":0.75,"rgb":[212,171,35]},{"index":0.88,"rgb":[221,210,54]},{"index":1,"rgb":[225,253,75]}],
+
+	"phase": [{"index":0,"rgb":[145,105,18]},{"index":0.13,"rgb":[184,71,38]},{"index":0.25,"rgb":[186,58,115]},{"index":0.38,"rgb":[160,71,185]},{"index":0.5,"rgb":[110,97,218]},{"index":0.63,"rgb":[50,123,164]},{"index":0.75,"rgb":[31,131,110]},{"index":0.88,"rgb":[77,129,34]},{"index":1,"rgb":[145,105,18]}],
+
+	"salinity": [{"index":0,"rgb":[42,24,108]},{"index":0.13,"rgb":[33,50,162]},{"index":0.25,"rgb":[15,90,145]},{"index":0.38,"rgb":[40,118,137]},{"index":0.5,"rgb":[59,146,135]},{"index":0.63,"rgb":[79,175,126]},{"index":0.75,"rgb":[120,203,104]},{"index":0.88,"rgb":[193,221,100]},{"index":1,"rgb":[253,239,154]}],
+
+	"temperature": [{"index":0,"rgb":[4,35,51]},{"index":0.13,"rgb":[23,51,122]},{"index":0.25,"rgb":[85,59,157]},{"index":0.38,"rgb":[129,79,143]},{"index":0.5,"rgb":[175,95,130]},{"index":0.63,"rgb":[222,112,101]},{"index":0.75,"rgb":[249,146,66]},{"index":0.88,"rgb":[249,196,65]},{"index":1,"rgb":[232,250,91]}],
+
+	"turbidity": [{"index":0,"rgb":[34,31,27]},{"index":0.13,"rgb":[65,50,41]},{"index":0.25,"rgb":[98,69,52]},{"index":0.38,"rgb":[131,89,57]},{"index":0.5,"rgb":[161,112,59]},{"index":0.63,"rgb":[185,140,66]},{"index":0.75,"rgb":[202,174,88]},{"index":0.88,"rgb":[216,209,126]},{"index":1,"rgb":[233,246,171]}],
+
+	"velocity-blue": [{"index":0,"rgb":[17,32,64]},{"index":0.13,"rgb":[35,52,116]},{"index":0.25,"rgb":[29,81,156]},{"index":0.38,"rgb":[31,113,162]},{"index":0.5,"rgb":[50,144,169]},{"index":0.63,"rgb":[87,173,176]},{"index":0.75,"rgb":[149,196,189]},{"index":0.88,"rgb":[203,221,211]},{"index":1,"rgb":[254,251,230]}],
+
+	"velocity-green": [{"index":0,"rgb":[23,35,19]},{"index":0.13,"rgb":[24,64,38]},{"index":0.25,"rgb":[11,95,45]},{"index":0.38,"rgb":[39,123,35]},{"index":0.5,"rgb":[95,146,12]},{"index":0.63,"rgb":[152,165,18]},{"index":0.75,"rgb":[201,186,69]},{"index":0.88,"rgb":[233,216,137]},{"index":1,"rgb":[255,253,205]}],
+
+	"cubehelix": [{"index":0,"rgb":[0,0,0]},{"index":0.07,"rgb":[22,5,59]},{"index":0.13,"rgb":[60,4,105]},{"index":0.2,"rgb":[109,1,135]},{"index":0.27,"rgb":[161,0,147]},{"index":0.33,"rgb":[210,2,142]},{"index":0.4,"rgb":[251,11,123]},{"index":0.47,"rgb":[255,29,97]},{"index":0.53,"rgb":[255,54,69]},{"index":0.6,"rgb":[255,85,46]},{"index":0.67,"rgb":[255,120,34]},{"index":0.73,"rgb":[255,157,37]},{"index":0.8,"rgb":[241,191,57]},{"index":0.87,"rgb":[224,220,93]},{"index":0.93,"rgb":[218,241,142]},{"index":1,"rgb":[227,253,198]}]
+};
+
+},{}],12:[function(require,module,exports){
+/*
+ * Ben Postlethwaite
+ * January 2013
+ * License MIT
+ */
+'use strict';
+
+var colorScale = require('./colorScale');
+var lerp = require('lerp')
+
+module.exports = createColormap;
+
+function createColormap (spec) {
+    /*
+     * Default Options
+     */
+    var indicies, fromrgba, torgba,
+        nsteps, cmap, colormap, format,
+        nshades, colors, alpha, i;
+
+    if ( !spec ) spec = {};
+
+    nshades = (spec.nshades || 72) - 1;
+    format = spec.format || 'hex';
+
+    colormap = spec.colormap;
+    if (!colormap) colormap = 'jet';
+
+    if (typeof colormap === 'string') {
+        colormap = colormap.toLowerCase();
+
+        if (!colorScale[colormap]) {
+            throw Error(colormap + ' not a supported colorscale');
+        }
+
+        cmap = colorScale[colormap];
+
+    } else if (Array.isArray(colormap)) {
+        cmap = colormap.slice();
+
+    } else {
+        throw Error('unsupported colormap option', colormap);
+    }
+
+    if (cmap.length > nshades + 1) {
+        throw new Error(
+            colormap+' map requires nshades to be at least size '+cmap.length
+        );
+    }
+
+    if (!Array.isArray(spec.alpha)) {
+
+        if (typeof spec.alpha === 'number') {
+            alpha = [spec.alpha, spec.alpha];
+
+        } else {
+            alpha = [1, 1];
+        }
+
+    } else if (spec.alpha.length !== 2) {
+        alpha = [1, 1];
+
+    } else {
+        alpha = spec.alpha.slice();
+    }
+
+    // map index points from 0..1 to 0..n-1
+    indicies = cmap.map(function(c) {
+        return Math.round(c.index * nshades);
+    });
+
+    // Add alpha channel to the map
+    alpha[0] = Math.min(Math.max(alpha[0], 0), 1);
+    alpha[1] = Math.min(Math.max(alpha[1], 0), 1);
+
+    var steps = cmap.map(function(c, i) {
+        var index = cmap[i].index
+
+        var rgba = cmap[i].rgb.slice();
+
+        // if user supplies their own map use it
+        if (rgba.length === 4 && rgba[3] >= 0 && rgba[3] <= 1) {
+            return rgba
+        }
+        rgba[3] = alpha[0] + (alpha[1] - alpha[0])*index;
+
+        return rgba
+    })
+
+
+    /*
+     * map increasing linear values between indicies to
+     * linear steps in colorvalues
+     */
+    var colors = []
+    for (i = 0; i < indicies.length-1; ++i) {
+        nsteps = indicies[i+1] - indicies[i];
+        fromrgba = steps[i];
+        torgba = steps[i+1];
+
+        for (var j = 0; j < nsteps; j++) {
+            var amt = j / nsteps
+            colors.push([
+                Math.round(lerp(fromrgba[0], torgba[0], amt)),
+                Math.round(lerp(fromrgba[1], torgba[1], amt)),
+                Math.round(lerp(fromrgba[2], torgba[2], amt)),
+                lerp(fromrgba[3], torgba[3], amt)
+            ])
+        }
+    }
+
+    //add 1 step as last value
+    colors.push(cmap[cmap.length - 1].rgb.concat(alpha[1]))
+
+    if (format === 'hex') colors = colors.map( rgb2hex );
+    else if (format === 'rgbaString') colors = colors.map( rgbaStr );
+    else if (format === 'float') colors = colors.map( rgb2float );
+
+    return colors;
+};
+
+function rgb2float (rgba) {
+    return [
+        rgba[0] / 255,
+        rgba[1] / 255,
+        rgba[2] / 255,
+        rgba[3]
+    ]
+}
+
+function rgb2hex (rgba) {
+    var dig, hex = '#';
+    for (var i = 0; i < 3; ++i) {
+        dig = rgba[i];
+        dig = dig.toString(16);
+        hex += ('00' + dig).substr( dig.length );
+    }
+    return hex;
+}
+
+function rgbaStr (rgba) {
+    return 'rgba(' + rgba.join(',') + ')';
+}
+
+},{"./colorScale":11,"lerp":46}],13:[function(require,module,exports){
 'use strict';
 
 module.exports = function defined() {
@@ -2725,7 +3473,278 @@ module.exports = function defined() {
 	}
 };
 
-},{}],6:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
+function backInOut(t) {
+  var s = 1.70158 * 1.525
+  if ((t *= 2) < 1)
+    return 0.5 * (t * t * ((s + 1) * t - s))
+  return 0.5 * ((t -= 2) * t * ((s + 1) * t + s) + 2)
+}
+
+module.exports = backInOut
+},{}],15:[function(require,module,exports){
+function backIn(t) {
+  var s = 1.70158
+  return t * t * ((s + 1) * t - s)
+}
+
+module.exports = backIn
+},{}],16:[function(require,module,exports){
+function backOut(t) {
+  var s = 1.70158
+  return --t * t * ((s + 1) * t + s) + 1
+}
+
+module.exports = backOut
+},{}],17:[function(require,module,exports){
+var bounceOut = require('./bounce-out')
+
+function bounceInOut(t) {
+  return t < 0.5
+    ? 0.5 * (1.0 - bounceOut(1.0 - t * 2.0))
+    : 0.5 * bounceOut(t * 2.0 - 1.0) + 0.5
+}
+
+module.exports = bounceInOut
+},{"./bounce-out":19}],18:[function(require,module,exports){
+var bounceOut = require('./bounce-out')
+
+function bounceIn(t) {
+  return 1.0 - bounceOut(1.0 - t)
+}
+
+module.exports = bounceIn
+},{"./bounce-out":19}],19:[function(require,module,exports){
+function bounceOut(t) {
+  var a = 4.0 / 11.0
+  var b = 8.0 / 11.0
+  var c = 9.0 / 10.0
+
+  var ca = 4356.0 / 361.0
+  var cb = 35442.0 / 1805.0
+  var cc = 16061.0 / 1805.0
+
+  var t2 = t * t
+
+  return t < a
+    ? 7.5625 * t2
+    : t < b
+      ? 9.075 * t2 - 9.9 * t + 3.4
+      : t < c
+        ? ca * t2 - cb * t + cc
+        : 10.8 * t * t - 20.52 * t + 10.72
+}
+
+module.exports = bounceOut
+},{}],20:[function(require,module,exports){
+function circInOut(t) {
+  if ((t *= 2) < 1) return -0.5 * (Math.sqrt(1 - t * t) - 1)
+  return 0.5 * (Math.sqrt(1 - (t -= 2) * t) + 1)
+}
+
+module.exports = circInOut
+},{}],21:[function(require,module,exports){
+function circIn(t) {
+  return 1.0 - Math.sqrt(1.0 - t * t)
+}
+
+module.exports = circIn
+},{}],22:[function(require,module,exports){
+function circOut(t) {
+  return Math.sqrt(1 - ( --t * t ))
+}
+
+module.exports = circOut
+},{}],23:[function(require,module,exports){
+function cubicInOut(t) {
+  return t < 0.5
+    ? 4.0 * t * t * t
+    : 0.5 * Math.pow(2.0 * t - 2.0, 3.0) + 1.0
+}
+
+module.exports = cubicInOut
+},{}],24:[function(require,module,exports){
+function cubicIn(t) {
+  return t * t * t
+}
+
+module.exports = cubicIn
+},{}],25:[function(require,module,exports){
+function cubicOut(t) {
+  var f = t - 1.0
+  return f * f * f + 1.0
+}
+
+module.exports = cubicOut
+},{}],26:[function(require,module,exports){
+function elasticInOut(t) {
+  return t < 0.5
+    ? 0.5 * Math.sin(+13.0 * Math.PI/2 * 2.0 * t) * Math.pow(2.0, 10.0 * (2.0 * t - 1.0))
+    : 0.5 * Math.sin(-13.0 * Math.PI/2 * ((2.0 * t - 1.0) + 1.0)) * Math.pow(2.0, -10.0 * (2.0 * t - 1.0)) + 1.0
+}
+
+module.exports = elasticInOut
+},{}],27:[function(require,module,exports){
+function elasticIn(t) {
+  return Math.sin(13.0 * t * Math.PI/2) * Math.pow(2.0, 10.0 * (t - 1.0))
+}
+
+module.exports = elasticIn
+},{}],28:[function(require,module,exports){
+function elasticOut(t) {
+  return Math.sin(-13.0 * (t + 1.0) * Math.PI/2) * Math.pow(2.0, -10.0 * t) + 1.0
+}
+
+module.exports = elasticOut
+},{}],29:[function(require,module,exports){
+function expoInOut(t) {
+  return (t === 0.0 || t === 1.0)
+    ? t
+    : t < 0.5
+      ? +0.5 * Math.pow(2.0, (20.0 * t) - 10.0)
+      : -0.5 * Math.pow(2.0, 10.0 - (t * 20.0)) + 1.0
+}
+
+module.exports = expoInOut
+},{}],30:[function(require,module,exports){
+function expoIn(t) {
+  return t === 0.0 ? t : Math.pow(2.0, 10.0 * (t - 1.0))
+}
+
+module.exports = expoIn
+},{}],31:[function(require,module,exports){
+function expoOut(t) {
+  return t === 1.0 ? t : 1.0 - Math.pow(2.0, -10.0 * t)
+}
+
+module.exports = expoOut
+},{}],32:[function(require,module,exports){
+module.exports = {
+	'backInOut': require('./back-in-out'),
+	'backIn': require('./back-in'),
+	'backOut': require('./back-out'),
+	'bounceInOut': require('./bounce-in-out'),
+	'bounceIn': require('./bounce-in'),
+	'bounceOut': require('./bounce-out'),
+	'circInOut': require('./circ-in-out'),
+	'circIn': require('./circ-in'),
+	'circOut': require('./circ-out'),
+	'cubicInOut': require('./cubic-in-out'),
+	'cubicIn': require('./cubic-in'),
+	'cubicOut': require('./cubic-out'),
+	'elasticInOut': require('./elastic-in-out'),
+	'elasticIn': require('./elastic-in'),
+	'elasticOut': require('./elastic-out'),
+	'expoInOut': require('./expo-in-out'),
+	'expoIn': require('./expo-in'),
+	'expoOut': require('./expo-out'),
+	'linear': require('./linear'),
+	'quadInOut': require('./quad-in-out'),
+	'quadIn': require('./quad-in'),
+	'quadOut': require('./quad-out'),
+	'quartInOut': require('./quart-in-out'),
+	'quartIn': require('./quart-in'),
+	'quartOut': require('./quart-out'),
+	'quintInOut': require('./quint-in-out'),
+	'quintIn': require('./quint-in'),
+	'quintOut': require('./quint-out'),
+	'sineInOut': require('./sine-in-out'),
+	'sineIn': require('./sine-in'),
+	'sineOut': require('./sine-out')
+}
+},{"./back-in":15,"./back-in-out":14,"./back-out":16,"./bounce-in":18,"./bounce-in-out":17,"./bounce-out":19,"./circ-in":21,"./circ-in-out":20,"./circ-out":22,"./cubic-in":24,"./cubic-in-out":23,"./cubic-out":25,"./elastic-in":27,"./elastic-in-out":26,"./elastic-out":28,"./expo-in":30,"./expo-in-out":29,"./expo-out":31,"./linear":33,"./quad-in":35,"./quad-in-out":34,"./quad-out":36,"./quart-in":38,"./quart-in-out":37,"./quart-out":39,"./quint-in":41,"./quint-in-out":40,"./quint-out":42,"./sine-in":44,"./sine-in-out":43,"./sine-out":45}],33:[function(require,module,exports){
+function linear(t) {
+  return t
+}
+
+module.exports = linear
+},{}],34:[function(require,module,exports){
+function quadInOut(t) {
+    t /= 0.5
+    if (t < 1) return 0.5*t*t
+    t--
+    return -0.5 * (t*(t-2) - 1)
+}
+
+module.exports = quadInOut
+},{}],35:[function(require,module,exports){
+function quadIn(t) {
+  return t * t
+}
+
+module.exports = quadIn
+},{}],36:[function(require,module,exports){
+function quadOut(t) {
+  return -t * (t - 2.0)
+}
+
+module.exports = quadOut
+},{}],37:[function(require,module,exports){
+function quarticInOut(t) {
+  return t < 0.5
+    ? +8.0 * Math.pow(t, 4.0)
+    : -8.0 * Math.pow(t - 1.0, 4.0) + 1.0
+}
+
+module.exports = quarticInOut
+},{}],38:[function(require,module,exports){
+function quarticIn(t) {
+  return Math.pow(t, 4.0)
+}
+
+module.exports = quarticIn
+},{}],39:[function(require,module,exports){
+function quarticOut(t) {
+  return Math.pow(t - 1.0, 3.0) * (1.0 - t) + 1.0
+}
+
+module.exports = quarticOut
+},{}],40:[function(require,module,exports){
+function qinticInOut(t) {
+    if ( ( t *= 2 ) < 1 ) return 0.5 * t * t * t * t * t
+    return 0.5 * ( ( t -= 2 ) * t * t * t * t + 2 )
+}
+
+module.exports = qinticInOut
+},{}],41:[function(require,module,exports){
+function qinticIn(t) {
+  return t * t * t * t * t
+}
+
+module.exports = qinticIn
+},{}],42:[function(require,module,exports){
+function qinticOut(t) {
+  return --t * t * t * t * t + 1
+}
+
+module.exports = qinticOut
+},{}],43:[function(require,module,exports){
+function sineInOut(t) {
+  return -0.5 * (Math.cos(Math.PI*t) - 1)
+}
+
+module.exports = sineInOut
+},{}],44:[function(require,module,exports){
+function sineIn (t) {
+  var v = Math.cos(t * Math.PI * 0.5)
+  if (Math.abs(v) < 1e-14) return 1
+  else return 1 - v
+}
+
+module.exports = sineIn
+
+},{}],45:[function(require,module,exports){
+function sineOut(t) {
+  return Math.sin(t * Math.PI/2)
+}
+
+module.exports = sineOut
+},{}],46:[function(require,module,exports){
+function lerp(v0, v1, t) {
+    return v0*(1-t)+v1*t
+}
+module.exports = lerp
+},{}],47:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -2903,7 +3922,7 @@ mixkey(Math.random(), pool);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],7:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 /*
  * A fast javascript implementation of simplex noise by Jonas Wagner
 
@@ -3378,156 +4397,247 @@ Better rank ordering method by Stefan Gustavson in 2012.
 
 })();
 
-},{}],8:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 const canvasSketch = require('canvas-sketch');
 const math = require('canvas-sketch-util/math');
+const eases = require('eases');
 const random = require('canvas-sketch-util/random');
-// const colormap = require('colormap');
-
-const seed = random.getRandomSeed();
+const colormap = require('colormap');
+const interpolate= require('color-interpolate');
 
 const settings = {
   dimensions: [ 1080, 1080 ],
   animate: true,
-  name: seed,
 };
 
-const sketch = ({ context, width, height }) => {
-  random.setSeed(seed);
-  const cols = 72;
-  const rows = 8;
-  const numCells = cols * rows;
+const particles = [];
 
-  //grid
-  const gw = width * 0.8;
-  const gh = height * 0.8;
+const cursor = { x: 9999, y: 9999 };
 
-  //cell
-  const cw = gw / cols;
-  const ch = gh / rows;
+const colors = colormap({
+  colormap: 'rainbow-soft',
+  nshades: 20,
+});
 
-  //margin
-  const mx = (width - gw) * 0.5;
-  const my = (height - gh) * 0.5;
+let elCanvas;
+let imgA, imgB;
 
-  const points = [];
+const sketch = ({ width, height, canvas }) => {
+  let x, y, particle, radius;
 
-  let x, y, n, lineWidth, color;
-  let frequency = 0.002;
-  let amplitude = 90;
+  const imgACanvas = document.createElement('canvas');
+  const imgAContext = imgACanvas.getContext('2d');
 
-  const colors = colormap({
-    colormap: 'salinity',
-    nshades: amplitude,
-  })
+  const imgBCanvas = document.createElement('canvas');
+  const imgBContext = imgBCanvas.getContext('2d');
 
-  for (let i = 0; i < numCells; i++) {
-    x = (i % cols) * cw;
-    y = Math.floor(i / cols) * ch;
+  imgACanvas.width = imgA.width;
+  imgACanvas.height = imgA.height;
 
-    n = random.noise2D(x, y, frequency, amplitude);
-    // x += n;
-    // y += n;
+  imgBCanvas.width = imgB.width;
+  imgBCanvas.height = imgB.height;
 
-    lineWidth = math.mapRange(n, -amplitude, amplitude, 0, 5);
+  imgAContext.drawImage(imgA, 0, 0, imgA.width, imgA.height);
+  imgBContext.drawImage(imgB, 0, 0, imgB.width, imgB.height);
 
-    color = colors[Math.floor(math.mapRange(n, -amplitude, amplitude, 0, amplitude))];
-    
-    points.push(new Point({ x,y, lineWidth, color }));
+  const imgAData = imgAContext.getImageData(0, 0, imgA.width, imgA.height).data;
+  const imgBData = imgBContext.getImageData(0, 0, imgB.width, imgB.height).data;
+
+  const numCircle = 30;
+  const gapCircle = 2;
+  const gapDot = 2;
+  let dotRadius = 12;
+  let cirRadius = 0;
+  const fitRadius = dotRadius;
+
+  elCanvas = canvas;
+  canvas.addEventListener('mousedown', onMouseDown);
+
+  for (let i = 0; i < numCircle; i++) {
+    const circumference = 2 * Math.PI * cirRadius;
+    const numFit = i ? Math.floor(circumference / (fitRadius * 2 + gapDot)) : 1;
+    const fitSlice = 2 * Math.PI / numFit;
+    let ix, iy, idx, r, g, b, colA, colB, colMap;
+
+    for (let j = 0; j < numFit ; j++){
+      const theta = fitSlice * j;
+
+      x = Math.cos(theta) * cirRadius + width * 0.5;
+      y = Math.sin(theta) * cirRadius + height * 0.5;
+
+      ix = Math.floor((x / width) * imgA.width)
+      iy = Math.floor((y / height) * imgA.height)
+      idx = (iy * imgA.width + ix) * 4;
+
+      r = imgAData[idx + 0];
+      g = imgAData[idx + 1];
+      b = imgAData[idx + 2];
+      colA = `rgb(${r}, ${g}, ${b})`;
+
+      // radius = dotRadius;
+      radius = math.mapRange(r, 0, 255, 1, 12)
+
+      r = imgBData[idx + 0];
+      g = imgBData[idx + 1];
+      b = imgBData[idx + 2];
+      colB = `rgb(${r}, ${g}, ${b})`;
+
+      colMap = interpolate([colA, colB]);
+
+      particle = new Particle({ x, y, radius, colMap});
+      particles.push(particle);
+    }
+
+    cirRadius += fitRadius * 2 + gapCircle;
+    dotRadius = (1 - eases.quadOut(i / numCircle)) * fitRadius;
   }
 
-  return ({ context, width, height, frame }) => {
+  return ({ context, width, height }) => {
     context.fillStyle = 'black';
     context.fillRect(0, 0, width, height);
 
-    context.save();
-    context.translate(mx, my);
-    context.translate(cw * 0.5, ch * 0.5);
-    context.strokeStyle = 'red';
-    context.lineWidth = 4;
+    particles.sort((a, b) => a.scale - b.scale);
 
-    //update positions
-    points.forEach(point => {
-      n = random.noise2D(point.ix + frame, point.iy, frequency, amplitude);
-      point.x = point.ix + n;
-      point.y = point.iy + n;
+    particles.forEach(particle => {
+      particle.update();
+      particle.draw(context);
     });
-
-    let lastx, lasty;
-
-    //draw lines
-    for (let r = 0; r < rows; r++) {
-      
-      for (let c = 0; c < cols - 1; c++) {
-        const curr = points[r * cols + c + 0];
-        const next = points[r * cols + c + 1];
-        
-        const mx = curr.x + (next.x - curr.x) * 0.8;
-        const my = curr.y + (next.y - curr.y) * 5.5;
-
-        if (!c) {
-          lastx = curr.x;
-          lasty = curr.y;
-        }
-        
-        context.beginPath();
-        context.lineWidth = curr.lineWidth;
-        context.strokeStyle = curr.color;
-
-        context.moveTo(lastx, lasty);
-        context.quadraticCurveTo(curr.x, curr.y, mx, my);
-        
-        context.stroke();
-
-        lastx = mx - c / cols * 250 ;
-        lasty = my - r / rows * 250;
-      }
-    
-    }
-
-    //draw points
-    points.forEach(point => {
-      // point.draw(context);
-    });
-
-
-
-    context.restore();
   };
 };
 
-canvasSketch(sketch, settings);
+const onMouseDown = (e) => {
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
 
-class Point {
-  constructor({x, y, lineWidth, color}) {
+  onMouseMove(e);
+};
+
+const onMouseMove = (e) => {
+  const x = (e.offsetX / elCanvas.offsetWidth) * elCanvas.width;
+  const y = (e.offsetY / elCanvas.offsetHeight) * elCanvas.height;
+
+  cursor.x = x;
+  cursor.y = y;
+};
+
+const onMouseUp = (e) => {
+  window.removeEventListener('mousemove', onMouseMove);
+  window.removeEventListener('mouseup', onMouseUp);
+
+  cursor.x = 9999;
+  cursor.y = 9999;
+};
+
+const loadImage = async (src) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject();
+    img.src = src;
+  });
+};
+
+const start = async () => {
+  imgA = await loadImage('../public/images/image-2.png');
+  imgB = await loadImage('../public/images/image-1.png');
+  canvasSketch(sketch, settings);
+};
+
+start();
+
+class Particle {
+  constructor({ x, y, radius = 10, colMap}) {
+    //position
     this.x = x;
     this.y = y;
-    this.lineWidth = lineWidth;
-    this.color = color;
 
+    //acceleration
+    this.ax = 0;
+    this.ay = 0;
+
+    //velocity
+    this.vx = 0;
+    this.vy = 0;
+
+    //initial position
     this.ix = x;
     this.iy = y;
+
+    this.radius = radius;
+    this.scale = 1;
+    this.colMap = colMap;
+    this.color = colMap(0);
+    
+    this.minDist = random.range(100, 200);
+    this.pushFactor = random.range(0.001, 0.02);
+    this.pullFactor = random.range(0.002, 0.006);
+    this.dampFactor = random.range(0.9, 0.95);
+  }
+
+  update() {
+    let dx, dy, dd, distDelta;
+    let idxColor;
+
+    //pull force
+    dx = this.ix - this.x;
+    dy = this.iy - this.y;
+    dd = Math.sqrt(dx * dx + dy * dy);
+
+    this.ax = dx * this.pullFactor;
+    this.ay = dy * this.pullFactor;
+
+    this.scale = math.mapRange(dd, 0, 200, 1, 3)
+
+    // idxColor = Math.floor(math.mapRange(dd, 0, 200, 0, colors.length - 1, true));
+    // this.color = colors[idxColor];
+
+    this.color = this.colMap(math.mapRange(dd, 0, 200, 0, 1, true));
+
+    //push force
+    dx = this.x - cursor.x;
+    dy = this.y - cursor.y;
+    dd = Math.sqrt(dx * dx + dy * dy);
+
+    distDelta = this.minDist - dd;
+
+    if (dd < this.minDist) {
+      this.ax += dx * distDelta * this.pushFactor;
+      this.ay += dy * distDelta * this.pushFactor;
+    }
+
+    this.ax += 0.001;
+
+    this.vx += this.ax;
+    this.vy += this.ay;
+
+    this.vx *= this.dampFactor;
+    this.vy *= this.dampFactor;
+
+
+    this.x += this.vx;
+    this.y += this.vy;
   }
 
   draw(context) {
     context.save();
     context.translate(this.x, this.y);
-    context.fillStyle = 'red';
+    context.fillStyle = this.color;
 
     context.beginPath();
-    context.arc(0, 0, 10, 0, Math.PI * 2);
+    context.arc(0, 0, this.radius * this.scale, 0, Math.PI * 2);
     context.fill();
+
 
     context.restore();
   }
 }
-},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3}],9:[function(require,module,exports){
+},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3,"color-interpolate":6,"colormap":12,"eases":32}],50:[function(require,module,exports){
 (function (global){(function (){
 
 global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}]},{},[8,9])
+},{}]},{},[49,50])
 
-//# sourceMappingURL=sketch--08.js.map
+//# sourceMappingURL=sketch-12.js.map

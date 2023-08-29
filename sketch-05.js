@@ -229,7 +229,7 @@ const getGlyph = (v) => {
   };
   
   const start = async () => {
-    const url = './images/rain.png';
+    const url = 'public/images/rain.png';
     image = await loadMeSomeImage(url);
     manager = await canvasSketch(sketch, settings);
   };

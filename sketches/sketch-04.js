@@ -1,4 +1,231 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+module.exports = wrap;
+function wrap (value, from, to) {
+  if (typeof from !== 'number' || typeof to !== 'number') {
+    throw new TypeError('Must specify "to" and "from" arguments as numbers');
+  }
+  // algorithm from http://stackoverflow.com/a/5852628/599884
+  if (from > to) {
+    var t = from;
+    from = to;
+    to = t;
+  }
+  var cycle = to - from;
+  if (cycle === 0) {
+    return to;
+  }
+  return value - cycle * Math.floor((value - from) / cycle);
+}
+
+},{}],2:[function(require,module,exports){
+var defined = require('defined');
+var wrap = require('./lib/wrap');
+var EPSILON = Number.EPSILON;
+
+function clamp (value, min, max) {
+  return min < max
+    ? (value < min ? min : value > max ? max : value)
+    : (value < max ? max : value > min ? min : value);
+}
+
+function clamp01 (v) {
+  return clamp(v, 0, 1);
+}
+
+function lerp (min, max, t) {
+  return min * (1 - t) + max * t;
+}
+
+function inverseLerp (min, max, t) {
+  if (Math.abs(min - max) < EPSILON) return 0;
+  else return (t - min) / (max - min);
+}
+
+function smoothstep (min, max, t) {
+  var x = clamp(inverseLerp(min, max, t), 0, 1);
+  return x * x * (3 - 2 * x);
+}
+
+function toFinite (n, defaultValue) {
+  defaultValue = defined(defaultValue, 0);
+  return typeof n === 'number' && isFinite(n) ? n : defaultValue;
+}
+
+function expandVector (dims) {
+  if (typeof dims !== 'number') throw new TypeError('Expected dims argument');
+  return function (p, defaultValue) {
+    defaultValue = defined(defaultValue, 0);
+    var scalar;
+    if (p == null) {
+      // No vector, create a default one
+      scalar = defaultValue;
+    } else if (typeof p === 'number' && isFinite(p)) {
+      // Expand single channel to multiple vector
+      scalar = p;
+    }
+
+    var out = [];
+    var i;
+    if (scalar == null) {
+      for (i = 0; i < dims; i++) {
+        out[i] = toFinite(p[i], defaultValue);
+      }
+    } else {
+      for (i = 0; i < dims; i++) {
+        out[i] = scalar;
+      }
+    }
+    return out;
+  };
+}
+
+function lerpArray (min, max, t, out) {
+  out = out || [];
+  if (min.length !== max.length) {
+    throw new TypeError('min and max array are expected to have the same length');
+  }
+  for (var i = 0; i < min.length; i++) {
+    out[i] = lerp(min[i], max[i], t);
+  }
+  return out;
+}
+
+function newArray (n, initialValue) {
+  n = defined(n, 0);
+  if (typeof n !== 'number') throw new TypeError('Expected n argument to be a number');
+  var out = [];
+  for (var i = 0; i < n; i++) out.push(initialValue);
+  return out;
+}
+
+function linspace (n, opts) {
+  n = defined(n, 0);
+  if (typeof n !== 'number') throw new TypeError('Expected n argument to be a number');
+  opts = opts || {};
+  if (typeof opts === 'boolean') {
+    opts = { endpoint: true };
+  }
+  var offset = defined(opts.offset, 0);
+  if (opts.endpoint) {
+    return newArray(n).map(function (_, i) {
+      return n <= 1 ? 0 : ((i + offset) / (n - 1));
+    });
+  } else {
+    return newArray(n).map(function (_, i) {
+      return (i + offset) / n;
+    });
+  }
+}
+
+function lerpFrames (values, t, out) {
+  t = clamp(t, 0, 1);
+
+  var len = values.length - 1;
+  var whole = t * len;
+  var frame = Math.floor(whole);
+  var fract = whole - frame;
+
+  var nextFrame = Math.min(frame + 1, len);
+  var a = values[frame % values.length];
+  var b = values[nextFrame % values.length];
+  if (typeof a === 'number' && typeof b === 'number') {
+    return lerp(a, b, fract);
+  } else if (Array.isArray(a) && Array.isArray(b)) {
+    return lerpArray(a, b, fract, out);
+  } else {
+    throw new TypeError('Mismatch in value type of two array elements: ' + frame + ' and ' + nextFrame);
+  }
+}
+
+function mod (a, b) {
+  return ((a % b) + b) % b;
+}
+
+function degToRad (n) {
+  return n * Math.PI / 180;
+}
+
+function radToDeg (n) {
+  return n * 180 / Math.PI;
+}
+
+function fract (n) {
+  return n - Math.floor(n);
+}
+
+function sign (n) {
+  if (n > 0) return 1;
+  else if (n < 0) return -1;
+  else return 0;
+}
+
+// Specific function from Unity / ofMath, not sure its needed?
+// function lerpWrap (a, b, t, min, max) {
+//   return wrap(a + wrap(b - a, min, max) * t, min, max)
+// }
+
+function pingPong (t, length) {
+  t = mod(t, length * 2);
+  return length - Math.abs(t - length);
+}
+
+function damp (a, b, lambda, dt) {
+  return lerp(a, b, 1 - Math.exp(-lambda * dt));
+}
+
+function dampArray (a, b, lambda, dt, out) {
+  out = out || [];
+  for (var i = 0; i < a.length; i++) {
+    out[i] = damp(a[i], b[i], lambda, dt);
+  }
+  return out;
+}
+
+function mapRange (value, inputMin, inputMax, outputMin, outputMax, clamp) {
+  // Reference:
+  // https://openframeworks.cc/documentation/math/ofMath/
+  if (Math.abs(inputMin - inputMax) < EPSILON) {
+    return outputMin;
+  } else {
+    var outVal = ((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin);
+    if (clamp) {
+      if (outputMax < outputMin) {
+        if (outVal < outputMax) outVal = outputMax;
+        else if (outVal > outputMin) outVal = outputMin;
+      } else {
+        if (outVal > outputMax) outVal = outputMax;
+        else if (outVal < outputMin) outVal = outputMin;
+      }
+    }
+    return outVal;
+  }
+}
+
+module.exports = {
+  mod: mod,
+  fract: fract,
+  sign: sign,
+  degToRad: degToRad,
+  radToDeg: radToDeg,
+  wrap: wrap,
+  pingPong: pingPong,
+  linspace: linspace,
+  lerp: lerp,
+  lerpArray: lerpArray,
+  inverseLerp: inverseLerp,
+  lerpFrames: lerpFrames,
+  clamp: clamp,
+  clamp01: clamp01,
+  smoothstep: smoothstep,
+  damp: damp,
+  dampArray: dampArray,
+  mapRange: mapRange,
+  expand2D: expandVector(2),
+  expand3D: expandVector(3),
+  expand4D: expandVector(4)
+};
+
+},{"./lib/wrap":1,"defined":5}],3:[function(require,module,exports){
 var seedRandom = require('seed-random');
 var SimplexNoise = require('simplex-noise');
 var defined = require('defined');
@@ -328,7 +555,7 @@ function createRandom (defaultSeed) {
 
 module.exports = createRandom();
 
-},{"defined":3,"seed-random":4,"simplex-noise":5}],2:[function(require,module,exports){
+},{"defined":5,"seed-random":6,"simplex-noise":7}],4:[function(require,module,exports){
 (function (global){(function (){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -2487,7 +2714,7 @@ module.exports = createRandom();
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 module.exports = function defined() {
@@ -2498,7 +2725,7 @@ module.exports = function defined() {
 	}
 };
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -2676,7 +2903,7 @@ mixkey(Math.random(), pool);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*
  * A fast javascript implementation of simplex noise by Jonas Wagner
 
@@ -3151,7 +3378,7 @@ Better rank ordering method by Stefan Gustavson in 2012.
 
 })();
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /*! Tweakpane 3.1.10 (c) 2016 cocopon, licensed under the MIT license. */
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -10785,12 +11012,11 @@ Better rank ordering method by Stefan Gustavson in 2012.
 
 }));
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 const canvasSketch = require('canvas-sketch');
-// const math = require('canvas-sketch-util/math');
+const math = require('canvas-sketch-util/math');
 const random = require('canvas-sketch-util/random');
 const Tweakpane = require('tweakpane');
-
 
 const settings = {
   dimensions: [ 1080, 1080 ],
@@ -10798,253 +11024,104 @@ const settings = {
 };
 
 const params = {
-  xs:'/',
-  sm:'/',
-  md:'/',
-  lg:'/',
-  randomchars:'/',
+  cols: 10,
+  rows: 10,
+  scaleMin: 1,
+  scaleMax: 30,
+  freq: 0.001,
+  amp: 0.2,
+  frame: 0,
+  animate: true,
+  lineCap: 'butt',
 }
 
-let manager, image;
-
-
-let text = 'A';
-let fontSize = 1200;
-let fontFamily = 'serif';
-
-const typeCanvas = document.createElement('canvas');
-const typeContext = typeCanvas.getContext('2d');
-
-const sketch = ({ width, height }) => {
-  const cell = 10;
-  const cols = Math.floor(width / cell);
-  const rows = Math.floor(height / cell);
-  const numCells = cols * rows;
-  
-  typeCanvas.width = cols;
-  typeCanvas.height = rows;
-  
-  return ({ context, width, height }) => {
-    typeContext.fillStyle = 'white';
-    typeContext.fillRect(0, 0, cols, rows);
-    
-    fontSize = cols * 1.2;
-
-    typeContext.save();
-    typeContext.drawImage(image, 0, 0, cols, rows); // draw image
-    typeContext.restore();
-
-    
-    // const metrics = typeContext.measureText(text);
-    // const mx = metrics.actualBoundingBoxLeft * -1;
-    // const my = metrics.actualBoundingBoxAscent * -1;
-    // const mw = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight;
-    // const mh = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-    
-    // const tx = (cols - mw) * 0.5 -mx;
-    // const ty = (rows - mh) * 0.5 -my;
-    
-    // typeContext.save();
-    // typeContext.translate(tx, ty);
-    
-    // typeContext.beginPath();
-    // typeContext.rect(mx, my, mw, mh);
-    // typeContext.stroke();
-    
-    // typeContext.fillText(text, 0, 0)
-    // typeContext.restore();
-    
-    const typeData = typeContext.getImageData(0, 0, cols, rows).data;
-    
-    
+const sketch = () => {
+  return ({ context, width, height, frame }) => {
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
-    
-    context.textBaseline = 'middle';
-    context.textAlign = 'center';
-    
-    // context.drawImage(typeCanvas, 0, 0);
-    
-    for (let i = 0; i < numCells; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      
-      const x = col * cell;
-      const y = row * cell;
-      
-      const r = typeData[i * 4 + 0];
-      const g = typeData[i * 4 + 1];
-      const b = typeData[i * 4 + 2];
-      const a = typeData[i * 4 + 3];
-      
-      const glyph = getGlyph(r);
-      
-      context.font = `${cell * 2}px ${fontFamily}`;
-      if (Math.random() < 0.1) context.font = `${cell * 6}px ${fontFamily}`;
-      
-      context.fillStyle = 'white';
-      
-      context.save();
-      context.translate(x, y);
-      context.translate(cell * 0.5, cell * 0.5);
-      
-      // context.fillRect(0, 0, cell, cell);
-      context.fillStyle = `rgb(${r}, ${g}, ${b}, ${a})`;
-      context.fillText(glyph, 0, 0)
-      
-      context.restore();
-    }
+
+    const cols = params.cols;
+    const rows = params.rows;
+    const numCells = cols * rows;
+
+    const gridw = width * 0.8;
+    const gridh = height * 0.8;
+    const cellw = gridw / cols;
+    const cellh = gridh / rows;
+    const margx = (width - gridw) * 0.5;
+    const margy = (height - gridh) * 0.5;
 
     for (let i = 0; i < numCells; i++) {
       const col = i % cols;
       const row = Math.floor(i / cols);
-      
-      const x = col * cell;
-      const y = row * cell;
-      
-      const r = typeData[i * 4 + 0];
-      const g = typeData[i * 4 + 1];
-      const b = typeData[i * 4 + 2];
-      const a = typeData[i * 4 + 3];
-      
-      const glyph = getGlyph(g);
-      
-      context.font = `${cell * 2}px ${fontFamily}`;
-      if (Math.random() < 0.1) context.font = `${cell * 6}px ${fontFamily}`;
-      
-      context.fillStyle = 'white';
-      
-      context.save();
-      context.translate(x, y);
-      context.translate(cell * 0.5, cell * 0.5);
-      
-      // context.fillRect(0, 0, cell, cell);
-      context.fillStyle = `rgb(${r}, ${g}, ${b}, ${a})`;
 
-      context.fillText(glyph, 0, 0)
+      const x = col * cellw;
+      const y = row * cellh;
+
+      const w = cellw * 0.8;
+      const h = cellh * 0.8;
+
+      const f = params.animate ? frame : params.frame;
+
+      // const n = random.noise2D(x + frame * 10, y, params.freq);
+      const n = random.noise3D(x, y,  f * 10 , params.freq);
+
+      const angle = n * Math.PI * params.amp;
+
+      // const scale = (n + 1)/ 2 * 30;
+      // const scale = (n * 0.5 + 0.5) * 30;
+      const scale = math.mapRange(n, -1, 1, params.scaleMin, params.scaleMax);
+
+
+      context.save();
+      context.translate(x , y);
+      context.translate(margx, margy);
+      context.translate(cellw * 0.5, cellh * 0.5);
+      context.rotate(angle);
+
+      context.lineWidth = scale;
+      context.lineCap = params.lineCap;
+      
+      context.beginPath();
+      context.moveTo(w * -0.5, 0);
+      context.lineTo(w * 0.5, 0);
+
+      context.stroke();
       
       context.restore();
     }
-    
-    for (let i = 0; i < numCells; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      
-      const x = col * cell;
-      const y = row * cell;
-      
-      const r = typeData[i * 4 + 0];
-      const g = typeData[i * 4 + 1];
-      const b = typeData[i * 4 + 2];
-      const a = typeData[i * 4 + 3];
-      
-      const glyph = getGlyph(b);
-      
-      context.font = `${cell * 2}px ${fontFamily}`;
-      if (Math.random() < 0.1) context.font = `${cell * 6}px ${fontFamily}`;
-      
-      context.fillStyle = 'white';
-      
-      context.save();
-      context.translate(x, y);
-      context.translate(cell * 0.5, cell * 0.5);
-      
-      // context.fillRect(0, 0, cell, cell);
-      context.fillStyle = `rgb(${r}, ${g}, ${b}, ${a})`;
-
-      context.fillText(glyph, 0, 0)
-      
-      context.restore();
-    }
-
-    for (let i = 0; i < numCells; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      
-      const x = col * cell;
-      const y = row * cell;
-      
-      const r = typeData[i * 4 + 0];
-      const g = typeData[i * 4 + 1];
-      const b = typeData[i * 4 + 2];
-      const a = typeData[i * 4 + 3];
-      
-      const glyph = getGlyph(a);
-      
-      context.font = `${cell * 2}px ${fontFamily}`;
-      if (Math.random() < 0.1) context.font = `${cell * 6}px ${fontFamily}`;
-      
-      context.fillStyle = 'white';
-      
-      context.save();
-      context.translate(x, y);
-      context.translate(cell * 0.5, cell * 0.5);
-      
-      // context.fillRect(0, 0, cell, cell);
-      context.fillStyle = `rgb(${r}, ${g}, ${b}, ${a})`;
-      context.fillText(glyph, 0, 0)
-      
-      context.restore();
-    }
-  };  
+  };
 };
 
-const getGlyph = (v) => {
-  if (v < 50) return params.xs;
-  if (v < 100) return params.sm;
-  if (v < 150) return params.md;
-  if (v < 200) return params.lg;
+const createPane = () => {
+  const pane = new Tweakpane.Pane();
+  let folder;
 
-  const glyphs = params.randomchars.split('');
+  folder = pane.addFolder({ title: 'Grid' });
+  folder.addInput(params, 'lineCap', { options: { butt: 'butt', round: 'round', square: 'square' } } );
+  folder.addInput(params, 'cols', { min: 2, max: 50, step: 1 });
+  folder.addInput(params, 'rows', { min: 2, max: 50, step: 1 });
+  folder.addInput(params, 'scaleMin', { min: 1, max: 100});
+  folder.addInput(params, 'scaleMax', { min: 1, max: 100});
 
-  return random.pick(glyphs);
+  folder = pane.addFolder({ title: 'Noise' });
+  folder.addInput(params, 'freq', { min: -0.01, max: 0.01 });
+  folder.addInput(params, 'amp', { min: 0, max: 1 });
+  folder.addInput(params, 'animate');
+  folder.addInput(params, 'frame', { min: 0, max: 999, step: 1 });
+
 };
 
-  const onKeyUp = (e) => {
-    text = e.key.toUpperCase();
-    text === 'ENTER' && manager.render();
-  }
-  
-  document.addEventListener('keyup', onKeyUp);
-  
-  const loadMeSomeImage = (url) => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => reject();
-      img.src = url;
-    });
-  };
-  
-  const start = async () => {
-    const url = './images/rain.png';
-    image = await loadMeSomeImage(url);
-    manager = await canvasSketch(sketch, settings);
-  };
+createPane();
+canvasSketch(sketch, settings);
 
-  const createPane = () => {
-    const pane = new Tweakpane.Pane();
-    let folder;
-    
-    folder = pane.addFolder({ title: 'Glyphs - Press ENTER to apply changes' });
-    folder.addInput(params, 'xs', { label: 'xs' });
-    folder.addInput(params, 'sm', { label: 'sm' });
-    folder.addInput(params, 'md', { label: 'md' });
-    folder.addInput(params, 'lg', { label: 'lg' });
-    folder.addInput(params, 'randomchars', { label: 'randomchars' });
-  };
-  
-  createPane();
-  
-  start();
-
-},{"canvas-sketch":2,"canvas-sketch-util/random":1,"tweakpane":6}],8:[function(require,module,exports){
+},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3,"tweakpane":8}],10:[function(require,module,exports){
 (function (global){(function (){
 
 global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}]},{},[7,8])
+},{}]},{},[9,10])
 
-//# sourceMappingURL=sketch--05.js.map
+//# sourceMappingURL=sketch-04.js.map

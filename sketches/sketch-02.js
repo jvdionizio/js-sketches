@@ -3383,117 +3383,68 @@ const canvasSketch = require('canvas-sketch');
 const math = require('canvas-sketch-util/math');
 const random = require('canvas-sketch-util/random');
 
-
 const settings = {
   dimensions: [ 1080, 1080 ],
   animate: true,
 };
 
-// const animate = () => {
-//   console.log('animate');
-//   requestAnimationFrame(animate);
-// };
-
-// animate();
-
-const sketch = ({ context, width, height }) => {
-  const agents = [];
-
-  for (let i = 0; i < 60; i++) {
-    const x = random.range(0, width);
-    const y = random.range(0, height);
-    agents.push(new Agent(x, y));
-  }
-
+const sketch = () => {
   return ({ context, width, height }) => {
-    context.fillStyle = 'black';
+    context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
 
     context.fillStyle = 'black';
 
-    for (let i = 0; i < agents.length; i++) {
-      const agent = agents[i];
+    const cx = width * 0.5;
+    const cy = height * 0.5;
 
-      for (let j = i + 1; j < agents.length; j++) {
-        const other = agents[j];
+    const w = width * 0.01;
+    const h = height * 0.1;
+    let x,y;
+    
+    const num = 60;
+    const radius = width * 0.3;
 
-        const dist = agent.pos.getDistance(other.pos);
+    for (let i = 0; i < num; i++) {
+      const slice = math.degToRad(360/num);
+      const angle = slice * i;
 
-        if (dist > 200) continue;
+      x = cx + Math.sin(angle) * radius;
+      y = cy + Math.cos(angle) * radius;
 
-        context.lineWidth = math.mapRange(dist, 0, 200, 12, 1);
-        context.strokeStyle = 'white';
+      context.save();
+      context.translate(x, y);
+      context.rotate(-angle);
+      context.scale(random.range(1,3), random.range(0.2, 2));
+  
+      context.beginPath();
+      context.rect(-w * 0.5, random.range(0, -h * 0.5),w,h);
+      context.fill();
+      context.restore();
 
-        context.beginPath();
-        context.moveTo(agent.pos.x, agent.pos.y);
-        context.lineTo(other.pos.x, other.pos.y);
-        context.stroke();
-      }
+      context.save();
+      context.translate(cx, cy);
+      context.rotate(-angle);
+
+      context.lineWidth = random.range(5,20);
+
+      context.beginPath();
+      context.arc(
+          0,
+          0,
+          radius * random.range(0.3, 1.3),
+          slice * random.range(1, -8),
+          slice * random.range(1, 5)
+        );
+      context.stroke();
+
+      context.restore();
     }
-
-    agents.forEach(
-      agent => {
-        agent.update();
-        agent.draw(context);
-        agent.wrap(width, height);
-    });
-
   };
 };
 
 canvasSketch(sketch, settings);
 
-class Vector {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  getDistance(other) {
-    const dx = this.x - other.x;
-    const dy = this.y - other.y;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-}
-
-class Agent {
-  constructor(x, y) {
-    this.pos = new Vector(x,y);
-    this.vel = new Vector(random.range(-1,1), random.range(-1,1));
-    this.radius = random.range(4, 12);
-  }
-
-  wrap(width, height) {
-    if(this.pos.x < 0) this.pos.x += width;
-    if(this.pos.x > width) this.pos.x -= width;
-    if(this.pos.y < 0) this.pos.y += height;
-    if(this.pos.y > height) this.pos.y -= height;
-  }
-
-  bounce(width, height) {
-    if(this.pos.x <= 0 || this.pos.x >= width) this.vel.x *= -1;
-    if(this.pos.y <= 0 || this.pos.y >= height) this.vel.y *= -1;
-  }
-
-  update() {
-    this.pos.x += this.vel.x;
-    this.pos.y += this.vel.y;
-  }
-
-  draw(context) {
-    context.save();
-    context.translate(this.pos.x, this.pos.y);
-
-    context.beginPath();
-    context.arc(0, 0, this.radius, 0, Math.PI * 2);
-    context.fill();
-    context.lineWidth = 3;
-    context.strokeStyle = 'white';
-    context.stroke();
-
-    context.restore();
-  }
-}
 },{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3}],9:[function(require,module,exports){
 (function (global){(function (){
 
@@ -3503,4 +3454,4 @@ global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 },{}]},{},[8,9])
 
-//# sourceMappingURL=sketch--03.js.map
+//# sourceMappingURL=sketch-02.js.map

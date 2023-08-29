@@ -225,7 +225,7 @@ module.exports = {
   expand4D: expandVector(4)
 };
 
-},{"./lib/wrap":1,"defined":7}],3:[function(require,module,exports){
+},{"./lib/wrap":1,"defined":5}],3:[function(require,module,exports){
 var seedRandom = require('seed-random');
 var SimplexNoise = require('simplex-noise');
 var defined = require('defined');
@@ -555,7 +555,7 @@ function createRandom (defaultSeed) {
 
 module.exports = createRandom();
 
-},{"defined":7,"seed-random":41,"simplex-noise":42}],4:[function(require,module,exports){
+},{"defined":5,"seed-random":38,"simplex-noise":39}],4:[function(require,module,exports){
 (function (global){(function (){
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
@@ -2715,242 +2715,6 @@ module.exports = createRandom();
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
 },{}],5:[function(require,module,exports){
-module.exports={
-	"jet":[{"index":0,"rgb":[0,0,131]},{"index":0.125,"rgb":[0,60,170]},{"index":0.375,"rgb":[5,255,255]},{"index":0.625,"rgb":[255,255,0]},{"index":0.875,"rgb":[250,0,0]},{"index":1,"rgb":[128,0,0]}],
-
-	"hsv":[{"index":0,"rgb":[255,0,0]},{"index":0.169,"rgb":[253,255,2]},{"index":0.173,"rgb":[247,255,2]},{"index":0.337,"rgb":[0,252,4]},{"index":0.341,"rgb":[0,252,10]},{"index":0.506,"rgb":[1,249,255]},{"index":0.671,"rgb":[2,0,253]},{"index":0.675,"rgb":[8,0,253]},{"index":0.839,"rgb":[255,0,251]},{"index":0.843,"rgb":[255,0,245]},{"index":1,"rgb":[255,0,6]}],
-
-	"hot":[{"index":0,"rgb":[0,0,0]},{"index":0.3,"rgb":[230,0,0]},{"index":0.6,"rgb":[255,210,0]},{"index":1,"rgb":[255,255,255]}],
-
-	"spring":[{"index":0,"rgb":[255,0,255]},{"index":1,"rgb":[255,255,0]}],
-
-	"summer":[{"index":0,"rgb":[0,128,102]},{"index":1,"rgb":[255,255,102]}],
-
-	"autumn":[{"index":0,"rgb":[255,0,0]},{"index":1,"rgb":[255,255,0]}],
-
-	"winter":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[0,255,128]}],
-
-	"bone":[{"index":0,"rgb":[0,0,0]},{"index":0.376,"rgb":[84,84,116]},{"index":0.753,"rgb":[169,200,200]},{"index":1,"rgb":[255,255,255]}],
-
-	"copper":[{"index":0,"rgb":[0,0,0]},{"index":0.804,"rgb":[255,160,102]},{"index":1,"rgb":[255,199,127]}],
-
-	"greys":[{"index":0,"rgb":[0,0,0]},{"index":1,"rgb":[255,255,255]}],
-
-	"yignbu":[{"index":0,"rgb":[8,29,88]},{"index":0.125,"rgb":[37,52,148]},{"index":0.25,"rgb":[34,94,168]},{"index":0.375,"rgb":[29,145,192]},{"index":0.5,"rgb":[65,182,196]},{"index":0.625,"rgb":[127,205,187]},{"index":0.75,"rgb":[199,233,180]},{"index":0.875,"rgb":[237,248,217]},{"index":1,"rgb":[255,255,217]}],
-
-	"greens":[{"index":0,"rgb":[0,68,27]},{"index":0.125,"rgb":[0,109,44]},{"index":0.25,"rgb":[35,139,69]},{"index":0.375,"rgb":[65,171,93]},{"index":0.5,"rgb":[116,196,118]},{"index":0.625,"rgb":[161,217,155]},{"index":0.75,"rgb":[199,233,192]},{"index":0.875,"rgb":[229,245,224]},{"index":1,"rgb":[247,252,245]}],
-
-	"yiorrd":[{"index":0,"rgb":[128,0,38]},{"index":0.125,"rgb":[189,0,38]},{"index":0.25,"rgb":[227,26,28]},{"index":0.375,"rgb":[252,78,42]},{"index":0.5,"rgb":[253,141,60]},{"index":0.625,"rgb":[254,178,76]},{"index":0.75,"rgb":[254,217,118]},{"index":0.875,"rgb":[255,237,160]},{"index":1,"rgb":[255,255,204]}],
-
-	"bluered":[{"index":0,"rgb":[0,0,255]},{"index":1,"rgb":[255,0,0]}],
-
-	"rdbu":[{"index":0,"rgb":[5,10,172]},{"index":0.35,"rgb":[106,137,247]},{"index":0.5,"rgb":[190,190,190]},{"index":0.6,"rgb":[220,170,132]},{"index":0.7,"rgb":[230,145,90]},{"index":1,"rgb":[178,10,28]}],
-
-	"picnic":[{"index":0,"rgb":[0,0,255]},{"index":0.1,"rgb":[51,153,255]},{"index":0.2,"rgb":[102,204,255]},{"index":0.3,"rgb":[153,204,255]},{"index":0.4,"rgb":[204,204,255]},{"index":0.5,"rgb":[255,255,255]},{"index":0.6,"rgb":[255,204,255]},{"index":0.7,"rgb":[255,153,255]},{"index":0.8,"rgb":[255,102,204]},{"index":0.9,"rgb":[255,102,102]},{"index":1,"rgb":[255,0,0]}],
-
-	"rainbow":[{"index":0,"rgb":[150,0,90]},{"index":0.125,"rgb":[0,0,200]},{"index":0.25,"rgb":[0,25,255]},{"index":0.375,"rgb":[0,152,255]},{"index":0.5,"rgb":[44,255,150]},{"index":0.625,"rgb":[151,255,0]},{"index":0.75,"rgb":[255,234,0]},{"index":0.875,"rgb":[255,111,0]},{"index":1,"rgb":[255,0,0]}],
-
-	"portland":[{"index":0,"rgb":[12,51,131]},{"index":0.25,"rgb":[10,136,186]},{"index":0.5,"rgb":[242,211,56]},{"index":0.75,"rgb":[242,143,56]},{"index":1,"rgb":[217,30,30]}],
-
-	"blackbody":[{"index":0,"rgb":[0,0,0]},{"index":0.2,"rgb":[230,0,0]},{"index":0.4,"rgb":[230,210,0]},{"index":0.7,"rgb":[255,255,255]},{"index":1,"rgb":[160,200,255]}],
-
-	"earth":[{"index":0,"rgb":[0,0,130]},{"index":0.1,"rgb":[0,180,180]},{"index":0.2,"rgb":[40,210,40]},{"index":0.4,"rgb":[230,230,50]},{"index":0.6,"rgb":[120,70,20]},{"index":1,"rgb":[255,255,255]}],
-
-	"electric":[{"index":0,"rgb":[0,0,0]},{"index":0.15,"rgb":[30,0,100]},{"index":0.4,"rgb":[120,0,100]},{"index":0.6,"rgb":[160,90,0]},{"index":0.8,"rgb":[230,200,0]},{"index":1,"rgb":[255,250,220]}],
-
-	"alpha": [{"index":0, "rgb": [255,255,255,0]},{"index":1, "rgb": [255,255,255,1]}],
-
-	"viridis": [{"index":0,"rgb":[68,1,84]},{"index":0.13,"rgb":[71,44,122]},{"index":0.25,"rgb":[59,81,139]},{"index":0.38,"rgb":[44,113,142]},{"index":0.5,"rgb":[33,144,141]},{"index":0.63,"rgb":[39,173,129]},{"index":0.75,"rgb":[92,200,99]},{"index":0.88,"rgb":[170,220,50]},{"index":1,"rgb":[253,231,37]}],
-
-	"inferno": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[31,12,72]},{"index":0.25,"rgb":[85,15,109]},{"index":0.38,"rgb":[136,34,106]},{"index":0.5,"rgb":[186,54,85]},{"index":0.63,"rgb":[227,89,51]},{"index":0.75,"rgb":[249,140,10]},{"index":0.88,"rgb":[249,201,50]},{"index":1,"rgb":[252,255,164]}],
-
-	"magma": [{"index":0,"rgb":[0,0,4]},{"index":0.13,"rgb":[28,16,68]},{"index":0.25,"rgb":[79,18,123]},{"index":0.38,"rgb":[129,37,129]},{"index":0.5,"rgb":[181,54,122]},{"index":0.63,"rgb":[229,80,100]},{"index":0.75,"rgb":[251,135,97]},{"index":0.88,"rgb":[254,194,135]},{"index":1,"rgb":[252,253,191]}],
-
-	"plasma": [{"index":0,"rgb":[13,8,135]},{"index":0.13,"rgb":[75,3,161]},{"index":0.25,"rgb":[125,3,168]},{"index":0.38,"rgb":[168,34,150]},{"index":0.5,"rgb":[203,70,121]},{"index":0.63,"rgb":[229,107,93]},{"index":0.75,"rgb":[248,148,65]},{"index":0.88,"rgb":[253,195,40]},{"index":1,"rgb":[240,249,33]}],
-
-	"warm": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[172,0,187]},{"index":0.25,"rgb":[219,0,170]},{"index":0.38,"rgb":[255,0,130]},{"index":0.5,"rgb":[255,63,74]},{"index":0.63,"rgb":[255,123,0]},{"index":0.75,"rgb":[234,176,0]},{"index":0.88,"rgb":[190,228,0]},{"index":1,"rgb":[147,255,0]}],
-
-	"cool": [{"index":0,"rgb":[125,0,179]},{"index":0.13,"rgb":[116,0,218]},{"index":0.25,"rgb":[98,74,237]},{"index":0.38,"rgb":[68,146,231]},{"index":0.5,"rgb":[0,204,197]},{"index":0.63,"rgb":[0,247,146]},{"index":0.75,"rgb":[0,255,88]},{"index":0.88,"rgb":[40,255,8]},{"index":1,"rgb":[147,255,0]}],
-
-	"rainbow-soft": [{"index":0,"rgb":[125,0,179]},{"index":0.1,"rgb":[199,0,180]},{"index":0.2,"rgb":[255,0,121]},{"index":0.3,"rgb":[255,108,0]},{"index":0.4,"rgb":[222,194,0]},{"index":0.5,"rgb":[150,255,0]},{"index":0.6,"rgb":[0,255,55]},{"index":0.7,"rgb":[0,246,150]},{"index":0.8,"rgb":[50,167,222]},{"index":0.9,"rgb":[103,51,235]},{"index":1,"rgb":[124,0,186]}],
-
-	"bathymetry": [{"index":0,"rgb":[40,26,44]},{"index":0.13,"rgb":[59,49,90]},{"index":0.25,"rgb":[64,76,139]},{"index":0.38,"rgb":[63,110,151]},{"index":0.5,"rgb":[72,142,158]},{"index":0.63,"rgb":[85,174,163]},{"index":0.75,"rgb":[120,206,163]},{"index":0.88,"rgb":[187,230,172]},{"index":1,"rgb":[253,254,204]}],
-
-	"cdom": [{"index":0,"rgb":[47,15,62]},{"index":0.13,"rgb":[87,23,86]},{"index":0.25,"rgb":[130,28,99]},{"index":0.38,"rgb":[171,41,96]},{"index":0.5,"rgb":[206,67,86]},{"index":0.63,"rgb":[230,106,84]},{"index":0.75,"rgb":[242,149,103]},{"index":0.88,"rgb":[249,193,135]},{"index":1,"rgb":[254,237,176]}],
-
-	"chlorophyll": [{"index":0,"rgb":[18,36,20]},{"index":0.13,"rgb":[25,63,41]},{"index":0.25,"rgb":[24,91,59]},{"index":0.38,"rgb":[13,119,72]},{"index":0.5,"rgb":[18,148,80]},{"index":0.63,"rgb":[80,173,89]},{"index":0.75,"rgb":[132,196,122]},{"index":0.88,"rgb":[175,221,162]},{"index":1,"rgb":[215,249,208]}],
-
-	"density": [{"index":0,"rgb":[54,14,36]},{"index":0.13,"rgb":[89,23,80]},{"index":0.25,"rgb":[110,45,132]},{"index":0.38,"rgb":[120,77,178]},{"index":0.5,"rgb":[120,113,213]},{"index":0.63,"rgb":[115,151,228]},{"index":0.75,"rgb":[134,185,227]},{"index":0.88,"rgb":[177,214,227]},{"index":1,"rgb":[230,241,241]}],
-
-	"freesurface-blue": [{"index":0,"rgb":[30,4,110]},{"index":0.13,"rgb":[47,14,176]},{"index":0.25,"rgb":[41,45,236]},{"index":0.38,"rgb":[25,99,212]},{"index":0.5,"rgb":[68,131,200]},{"index":0.63,"rgb":[114,156,197]},{"index":0.75,"rgb":[157,181,203]},{"index":0.88,"rgb":[200,208,216]},{"index":1,"rgb":[241,237,236]}],
-
-	"freesurface-red": [{"index":0,"rgb":[60,9,18]},{"index":0.13,"rgb":[100,17,27]},{"index":0.25,"rgb":[142,20,29]},{"index":0.38,"rgb":[177,43,27]},{"index":0.5,"rgb":[192,87,63]},{"index":0.63,"rgb":[205,125,105]},{"index":0.75,"rgb":[216,162,148]},{"index":0.88,"rgb":[227,199,193]},{"index":1,"rgb":[241,237,236]}],
-
-	"oxygen": [{"index":0,"rgb":[64,5,5]},{"index":0.13,"rgb":[106,6,15]},{"index":0.25,"rgb":[144,26,7]},{"index":0.38,"rgb":[168,64,3]},{"index":0.5,"rgb":[188,100,4]},{"index":0.63,"rgb":[206,136,11]},{"index":0.75,"rgb":[220,174,25]},{"index":0.88,"rgb":[231,215,44]},{"index":1,"rgb":[248,254,105]}],
-
-	"par": [{"index":0,"rgb":[51,20,24]},{"index":0.13,"rgb":[90,32,35]},{"index":0.25,"rgb":[129,44,34]},{"index":0.38,"rgb":[159,68,25]},{"index":0.5,"rgb":[182,99,19]},{"index":0.63,"rgb":[199,134,22]},{"index":0.75,"rgb":[212,171,35]},{"index":0.88,"rgb":[221,210,54]},{"index":1,"rgb":[225,253,75]}],
-
-	"phase": [{"index":0,"rgb":[145,105,18]},{"index":0.13,"rgb":[184,71,38]},{"index":0.25,"rgb":[186,58,115]},{"index":0.38,"rgb":[160,71,185]},{"index":0.5,"rgb":[110,97,218]},{"index":0.63,"rgb":[50,123,164]},{"index":0.75,"rgb":[31,131,110]},{"index":0.88,"rgb":[77,129,34]},{"index":1,"rgb":[145,105,18]}],
-
-	"salinity": [{"index":0,"rgb":[42,24,108]},{"index":0.13,"rgb":[33,50,162]},{"index":0.25,"rgb":[15,90,145]},{"index":0.38,"rgb":[40,118,137]},{"index":0.5,"rgb":[59,146,135]},{"index":0.63,"rgb":[79,175,126]},{"index":0.75,"rgb":[120,203,104]},{"index":0.88,"rgb":[193,221,100]},{"index":1,"rgb":[253,239,154]}],
-
-	"temperature": [{"index":0,"rgb":[4,35,51]},{"index":0.13,"rgb":[23,51,122]},{"index":0.25,"rgb":[85,59,157]},{"index":0.38,"rgb":[129,79,143]},{"index":0.5,"rgb":[175,95,130]},{"index":0.63,"rgb":[222,112,101]},{"index":0.75,"rgb":[249,146,66]},{"index":0.88,"rgb":[249,196,65]},{"index":1,"rgb":[232,250,91]}],
-
-	"turbidity": [{"index":0,"rgb":[34,31,27]},{"index":0.13,"rgb":[65,50,41]},{"index":0.25,"rgb":[98,69,52]},{"index":0.38,"rgb":[131,89,57]},{"index":0.5,"rgb":[161,112,59]},{"index":0.63,"rgb":[185,140,66]},{"index":0.75,"rgb":[202,174,88]},{"index":0.88,"rgb":[216,209,126]},{"index":1,"rgb":[233,246,171]}],
-
-	"velocity-blue": [{"index":0,"rgb":[17,32,64]},{"index":0.13,"rgb":[35,52,116]},{"index":0.25,"rgb":[29,81,156]},{"index":0.38,"rgb":[31,113,162]},{"index":0.5,"rgb":[50,144,169]},{"index":0.63,"rgb":[87,173,176]},{"index":0.75,"rgb":[149,196,189]},{"index":0.88,"rgb":[203,221,211]},{"index":1,"rgb":[254,251,230]}],
-
-	"velocity-green": [{"index":0,"rgb":[23,35,19]},{"index":0.13,"rgb":[24,64,38]},{"index":0.25,"rgb":[11,95,45]},{"index":0.38,"rgb":[39,123,35]},{"index":0.5,"rgb":[95,146,12]},{"index":0.63,"rgb":[152,165,18]},{"index":0.75,"rgb":[201,186,69]},{"index":0.88,"rgb":[233,216,137]},{"index":1,"rgb":[255,253,205]}],
-
-	"cubehelix": [{"index":0,"rgb":[0,0,0]},{"index":0.07,"rgb":[22,5,59]},{"index":0.13,"rgb":[60,4,105]},{"index":0.2,"rgb":[109,1,135]},{"index":0.27,"rgb":[161,0,147]},{"index":0.33,"rgb":[210,2,142]},{"index":0.4,"rgb":[251,11,123]},{"index":0.47,"rgb":[255,29,97]},{"index":0.53,"rgb":[255,54,69]},{"index":0.6,"rgb":[255,85,46]},{"index":0.67,"rgb":[255,120,34]},{"index":0.73,"rgb":[255,157,37]},{"index":0.8,"rgb":[241,191,57]},{"index":0.87,"rgb":[224,220,93]},{"index":0.93,"rgb":[218,241,142]},{"index":1,"rgb":[227,253,198]}]
-};
-
-},{}],6:[function(require,module,exports){
-/*
- * Ben Postlethwaite
- * January 2013
- * License MIT
- */
-'use strict';
-
-var colorScale = require('./colorScale');
-var lerp = require('lerp')
-
-module.exports = createColormap;
-
-function createColormap (spec) {
-    /*
-     * Default Options
-     */
-    var indicies, fromrgba, torgba,
-        nsteps, cmap, colormap, format,
-        nshades, colors, alpha, i;
-
-    if ( !spec ) spec = {};
-
-    nshades = (spec.nshades || 72) - 1;
-    format = spec.format || 'hex';
-
-    colormap = spec.colormap;
-    if (!colormap) colormap = 'jet';
-
-    if (typeof colormap === 'string') {
-        colormap = colormap.toLowerCase();
-
-        if (!colorScale[colormap]) {
-            throw Error(colormap + ' not a supported colorscale');
-        }
-
-        cmap = colorScale[colormap];
-
-    } else if (Array.isArray(colormap)) {
-        cmap = colormap.slice();
-
-    } else {
-        throw Error('unsupported colormap option', colormap);
-    }
-
-    if (cmap.length > nshades + 1) {
-        throw new Error(
-            colormap+' map requires nshades to be at least size '+cmap.length
-        );
-    }
-
-    if (!Array.isArray(spec.alpha)) {
-
-        if (typeof spec.alpha === 'number') {
-            alpha = [spec.alpha, spec.alpha];
-
-        } else {
-            alpha = [1, 1];
-        }
-
-    } else if (spec.alpha.length !== 2) {
-        alpha = [1, 1];
-
-    } else {
-        alpha = spec.alpha.slice();
-    }
-
-    // map index points from 0..1 to 0..n-1
-    indicies = cmap.map(function(c) {
-        return Math.round(c.index * nshades);
-    });
-
-    // Add alpha channel to the map
-    alpha[0] = Math.min(Math.max(alpha[0], 0), 1);
-    alpha[1] = Math.min(Math.max(alpha[1], 0), 1);
-
-    var steps = cmap.map(function(c, i) {
-        var index = cmap[i].index
-
-        var rgba = cmap[i].rgb.slice();
-
-        // if user supplies their own map use it
-        if (rgba.length === 4 && rgba[3] >= 0 && rgba[3] <= 1) {
-            return rgba
-        }
-        rgba[3] = alpha[0] + (alpha[1] - alpha[0])*index;
-
-        return rgba
-    })
-
-
-    /*
-     * map increasing linear values between indicies to
-     * linear steps in colorvalues
-     */
-    var colors = []
-    for (i = 0; i < indicies.length-1; ++i) {
-        nsteps = indicies[i+1] - indicies[i];
-        fromrgba = steps[i];
-        torgba = steps[i+1];
-
-        for (var j = 0; j < nsteps; j++) {
-            var amt = j / nsteps
-            colors.push([
-                Math.round(lerp(fromrgba[0], torgba[0], amt)),
-                Math.round(lerp(fromrgba[1], torgba[1], amt)),
-                Math.round(lerp(fromrgba[2], torgba[2], amt)),
-                lerp(fromrgba[3], torgba[3], amt)
-            ])
-        }
-    }
-
-    //add 1 step as last value
-    colors.push(cmap[cmap.length - 1].rgb.concat(alpha[1]))
-
-    if (format === 'hex') colors = colors.map( rgb2hex );
-    else if (format === 'rgbaString') colors = colors.map( rgbaStr );
-    else if (format === 'float') colors = colors.map( rgb2float );
-
-    return colors;
-};
-
-function rgb2float (rgba) {
-    return [
-        rgba[0] / 255,
-        rgba[1] / 255,
-        rgba[2] / 255,
-        rgba[3]
-    ]
-}
-
-function rgb2hex (rgba) {
-    var dig, hex = '#';
-    for (var i = 0; i < 3; ++i) {
-        dig = rgba[i];
-        dig = dig.toString(16);
-        hex += ('00' + dig).substr( dig.length );
-    }
-    return hex;
-}
-
-function rgbaStr (rgba) {
-    return 'rgba(' + rgba.join(',') + ')';
-}
-
-},{"./colorScale":5,"lerp":40}],7:[function(require,module,exports){
 'use strict';
 
 module.exports = function defined() {
@@ -2961,7 +2725,7 @@ module.exports = function defined() {
 	}
 };
 
-},{}],8:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 function backInOut(t) {
   var s = 1.70158 * 1.525
   if ((t *= 2) < 1)
@@ -2970,21 +2734,21 @@ function backInOut(t) {
 }
 
 module.exports = backInOut
-},{}],9:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 function backIn(t) {
   var s = 1.70158
   return t * t * ((s + 1) * t - s)
 }
 
 module.exports = backIn
-},{}],10:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 function backOut(t) {
   var s = 1.70158
   return --t * t * ((s + 1) * t + s) + 1
 }
 
 module.exports = backOut
-},{}],11:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var bounceOut = require('./bounce-out')
 
 function bounceInOut(t) {
@@ -2994,7 +2758,7 @@ function bounceInOut(t) {
 }
 
 module.exports = bounceInOut
-},{"./bounce-out":13}],12:[function(require,module,exports){
+},{"./bounce-out":11}],10:[function(require,module,exports){
 var bounceOut = require('./bounce-out')
 
 function bounceIn(t) {
@@ -3002,7 +2766,7 @@ function bounceIn(t) {
 }
 
 module.exports = bounceIn
-},{"./bounce-out":13}],13:[function(require,module,exports){
+},{"./bounce-out":11}],11:[function(require,module,exports){
 function bounceOut(t) {
   var a = 4.0 / 11.0
   var b = 8.0 / 11.0
@@ -3024,26 +2788,26 @@ function bounceOut(t) {
 }
 
 module.exports = bounceOut
-},{}],14:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 function circInOut(t) {
   if ((t *= 2) < 1) return -0.5 * (Math.sqrt(1 - t * t) - 1)
   return 0.5 * (Math.sqrt(1 - (t -= 2) * t) + 1)
 }
 
 module.exports = circInOut
-},{}],15:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 function circIn(t) {
   return 1.0 - Math.sqrt(1.0 - t * t)
 }
 
 module.exports = circIn
-},{}],16:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 function circOut(t) {
   return Math.sqrt(1 - ( --t * t ))
 }
 
 module.exports = circOut
-},{}],17:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 function cubicInOut(t) {
   return t < 0.5
     ? 4.0 * t * t * t
@@ -3051,20 +2815,20 @@ function cubicInOut(t) {
 }
 
 module.exports = cubicInOut
-},{}],18:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 function cubicIn(t) {
   return t * t * t
 }
 
 module.exports = cubicIn
-},{}],19:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 function cubicOut(t) {
   var f = t - 1.0
   return f * f * f + 1.0
 }
 
 module.exports = cubicOut
-},{}],20:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 function elasticInOut(t) {
   return t < 0.5
     ? 0.5 * Math.sin(+13.0 * Math.PI/2 * 2.0 * t) * Math.pow(2.0, 10.0 * (2.0 * t - 1.0))
@@ -3072,19 +2836,19 @@ function elasticInOut(t) {
 }
 
 module.exports = elasticInOut
-},{}],21:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 function elasticIn(t) {
   return Math.sin(13.0 * t * Math.PI/2) * Math.pow(2.0, 10.0 * (t - 1.0))
 }
 
 module.exports = elasticIn
-},{}],22:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 function elasticOut(t) {
   return Math.sin(-13.0 * (t + 1.0) * Math.PI/2) * Math.pow(2.0, -10.0 * t) + 1.0
 }
 
 module.exports = elasticOut
-},{}],23:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 function expoInOut(t) {
   return (t === 0.0 || t === 1.0)
     ? t
@@ -3094,19 +2858,19 @@ function expoInOut(t) {
 }
 
 module.exports = expoInOut
-},{}],24:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 function expoIn(t) {
   return t === 0.0 ? t : Math.pow(2.0, 10.0 * (t - 1.0))
 }
 
 module.exports = expoIn
-},{}],25:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 function expoOut(t) {
   return t === 1.0 ? t : 1.0 - Math.pow(2.0, -10.0 * t)
 }
 
 module.exports = expoOut
-},{}],26:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = {
 	'backInOut': require('./back-in-out'),
 	'backIn': require('./back-in'),
@@ -3140,13 +2904,13 @@ module.exports = {
 	'sineIn': require('./sine-in'),
 	'sineOut': require('./sine-out')
 }
-},{"./back-in":9,"./back-in-out":8,"./back-out":10,"./bounce-in":12,"./bounce-in-out":11,"./bounce-out":13,"./circ-in":15,"./circ-in-out":14,"./circ-out":16,"./cubic-in":18,"./cubic-in-out":17,"./cubic-out":19,"./elastic-in":21,"./elastic-in-out":20,"./elastic-out":22,"./expo-in":24,"./expo-in-out":23,"./expo-out":25,"./linear":27,"./quad-in":29,"./quad-in-out":28,"./quad-out":30,"./quart-in":32,"./quart-in-out":31,"./quart-out":33,"./quint-in":35,"./quint-in-out":34,"./quint-out":36,"./sine-in":38,"./sine-in-out":37,"./sine-out":39}],27:[function(require,module,exports){
+},{"./back-in":7,"./back-in-out":6,"./back-out":8,"./bounce-in":10,"./bounce-in-out":9,"./bounce-out":11,"./circ-in":13,"./circ-in-out":12,"./circ-out":14,"./cubic-in":16,"./cubic-in-out":15,"./cubic-out":17,"./elastic-in":19,"./elastic-in-out":18,"./elastic-out":20,"./expo-in":22,"./expo-in-out":21,"./expo-out":23,"./linear":25,"./quad-in":27,"./quad-in-out":26,"./quad-out":28,"./quart-in":30,"./quart-in-out":29,"./quart-out":31,"./quint-in":33,"./quint-in-out":32,"./quint-out":34,"./sine-in":36,"./sine-in-out":35,"./sine-out":37}],25:[function(require,module,exports){
 function linear(t) {
   return t
 }
 
 module.exports = linear
-},{}],28:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 function quadInOut(t) {
     t /= 0.5
     if (t < 1) return 0.5*t*t
@@ -3155,19 +2919,19 @@ function quadInOut(t) {
 }
 
 module.exports = quadInOut
-},{}],29:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 function quadIn(t) {
   return t * t
 }
 
 module.exports = quadIn
-},{}],30:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 function quadOut(t) {
   return -t * (t - 2.0)
 }
 
 module.exports = quadOut
-},{}],31:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 function quarticInOut(t) {
   return t < 0.5
     ? +8.0 * Math.pow(t, 4.0)
@@ -3175,44 +2939,44 @@ function quarticInOut(t) {
 }
 
 module.exports = quarticInOut
-},{}],32:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 function quarticIn(t) {
   return Math.pow(t, 4.0)
 }
 
 module.exports = quarticIn
-},{}],33:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 function quarticOut(t) {
   return Math.pow(t - 1.0, 3.0) * (1.0 - t) + 1.0
 }
 
 module.exports = quarticOut
-},{}],34:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 function qinticInOut(t) {
     if ( ( t *= 2 ) < 1 ) return 0.5 * t * t * t * t * t
     return 0.5 * ( ( t -= 2 ) * t * t * t * t + 2 )
 }
 
 module.exports = qinticInOut
-},{}],35:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 function qinticIn(t) {
   return t * t * t * t * t
 }
 
 module.exports = qinticIn
-},{}],36:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 function qinticOut(t) {
   return --t * t * t * t * t + 1
 }
 
 module.exports = qinticOut
-},{}],37:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 function sineInOut(t) {
   return -0.5 * (Math.cos(Math.PI*t) - 1)
 }
 
 module.exports = sineInOut
-},{}],38:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 function sineIn (t) {
   var v = Math.cos(t * Math.PI * 0.5)
   if (Math.abs(v) < 1e-14) return 1
@@ -3221,18 +2985,13 @@ function sineIn (t) {
 
 module.exports = sineIn
 
-},{}],39:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 function sineOut(t) {
   return Math.sin(t * Math.PI/2)
 }
 
 module.exports = sineOut
-},{}],40:[function(require,module,exports){
-function lerp(v0, v1, t) {
-    return v0*(1-t)+v1*t
-}
-module.exports = lerp
-},{}],41:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -3410,7 +3169,7 @@ mixkey(Math.random(), pool);
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],42:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /*
  * A fast javascript implementation of simplex noise by Jonas Wagner
 
@@ -3885,192 +3644,234 @@ Better rank ordering method by Stefan Gustavson in 2012.
 
 })();
 
-},{}],43:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 const canvasSketch = require('canvas-sketch');
 const math = require('canvas-sketch-util/math');
 const eases = require('eases');
 const random = require('canvas-sketch-util/random');
-const colormap = require('colormap');
 
 const settings = {
   dimensions: [ 1080, 1080 ],
   animate: true,
 };
 
-const particles = [];
+let audio;
+let audioContext, audioData, sourceNode, analyserNode;
+let manager;
+let minDb, maxDb;
 
-const cursor = { x: 9999, y: 9999 };
+let imgA;
 
-const colors = colormap({
-  colormap: 'rainbow-soft',
-  nshades: 20,
-});
+const sketch = ({ context, width, height }) => {
+  let circles = [
+    {
+      w : width * 0.002,
+      h : height * 0.088,      
+      num : 60,
+      radius : 52,
+      bin: 4,
+    },
+    {
+      w : width * 0.003,
+      h : height * 0.17,      
+      num : 70,
+      radius : 102,
+      bin: 100,
+    },
+    {
+      w : width * 0.002,
+      h : height * 0.32,      
+      num : 60,
+      radius : 200,
+      angle: 140,
+      rotation: 89,
+      bin: 150,
+    },
+    {
+      w : width * 0.002,
+      h : height * 0.54,      
+      num : 60,
+      radius : 296,
+      angle: 71,
+      rotation: 99,
+      bin: 230,
+    },
+  ];
 
-let elCanvas;
-
-const sketch = ({ width, height, canvas }) => {
-  let x, y, particle;
-  let pos = [];
-
-  const numCircle = 15;
-  const gapCircle = 8;
-  const gapDot = 4;
-  let dotRadius = 12;
-  let cirRadius = 0;
-  const fitRadius = dotRadius;
-
-  elCanvas = canvas;
-  canvas.addEventListener('mousedown', onMouseDown);
-
-  for (let i = 0; i < numCircle; i++) {
-    const circumference = 2 * Math.PI * cirRadius;
-    const numFit = i ? Math.floor(circumference / (fitRadius * 2 + gapDot)) : 1;
-    const fitSlice = 2 * Math.PI / numFit;
-
-    for (let j = 0; j < numFit ; j++){
-      const theta = fitSlice * j;
-
-      x = Math.cos(theta) * cirRadius + width * 0.5;
-      y = Math.sin(theta) * cirRadius + height * 0.5;
-
-      radius = dotRadius;
-
-      particle = new Particle({ x, y, radius });
-      particles.push(particle);
-    }
-
-    cirRadius += fitRadius * 2 + gapCircle;
-    dotRadius = (1 - eases.quadOut(i / numCircle)) * fitRadius;
-  }
-
+  const cx = width * 0.359;
+  const cy = height * 0.626;
+  
   return ({ context, width, height }) => {
-    context.fillStyle = 'black';
+    context.fillStyle = '#e6e6da';
     context.fillRect(0, 0, width, height);
 
-    particles.sort((a, b) => a.scale - b.scale);
+    context.drawImage(imgA, 70, 900, imgA.width * 0.7, imgA.height * 0.7);
+    
+    context.fillStyle = '#4c0116';
 
-    particles.forEach(particle => {
-      particle.update();
-      particle.draw(context);
+    //draw canvas border
+    context.save();
+    context.translate(width * 0.5, height * 0.5);
+    context.lineWidth = 50;
+    context.strokeStyle = '#4c0116';
+
+
+    context.beginPath();
+    context.rect(-width * 0.5, -height * 0.5, width, height);
+    context.stroke();
+
+    context.restore();
+
+    //text
+    context.save();
+    context.translate(0, 0);
+    context.fillText('behance.net/joovidionizi', 75, 50);
+
+    context.restore();
+
+    //text
+    context.save();
+    context.translate(width, 0);
+    context.fillText('Original art by -', -175, 50);
+    context.fillText('Rob Shuttleworth', -174, 70);
+
+    context.restore();
+
+    if(!audioContext) return;
+    
+    analyserNode.getFloatFrequencyData(audioData);
+  
+
+    circles.forEach(circle => {
+      let x,y;
+
+      let cw = circle.w;
+      const ch = circle.h;
+      
+      const cNum = circle.num;
+      const cRadius = circle.radius;
+
+      const cAngle = circle.angle || 360;
+
+      let cRotation = circle.rotation ? math.degToRad(circle.rotation) :  0;
+
+      const cBin = circle.bin;
+
+      //use Bin to change cRotation softly
+      if (cBin) {;
+        const db = audioData[cBin];
+        const dbNorm = math.mapRange(db, minDb, maxDb, 0, 1);
+
+        cRotation = math.lerp(cRotation, dbNorm * Math.PI * 1.4, 1);
+      }
+
+      for (let i = 0; i < cNum; i++) {
+        const slice = math.degToRad(cAngle/cNum);
+        const angle = slice * i + cRotation;
+
+        x = cx + Math.sin(angle) * cRadius;
+        y = cy + Math.cos(angle) * cRadius;
+
+        if (cAngle !== 360){
+          cw += eases.quadIn(i) * 0.00003;
+        }
+
+        context.save();
+        context.translate(x, y);
+        context.rotate(-angle);
+    
+        context.beginPath();
+        context.rect(-cw * 0.5, -ch * 0.5,cw,ch);
+        context.fill();
+        context.restore();
+
+        //draw circle above each rect
+        context.save();
+        
+        context.translate(cx, cy)
+        context.rotate(-angle);
+
+        context.beginPath();
+        context.arc(0, circle.radius + ch * 0.5, cw * 0.8, 0, Math.PI * 2);
+        context.fill();
+
+        context.restore();
+      }
     });
   };
 };
 
-const onMouseDown = (e) => {
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
+const addListeners = () => {
+  window.addEventListener('mouseup', () => {
+    if (!audioContext) createAudio();
 
-  onMouseMove(e);
-};
-
-const onMouseMove = (e) => {
-  const x = (e.offsetX / elCanvas.offsetWidth) * elCanvas.width;
-  const y = (e.offsetY / elCanvas.offsetHeight) * elCanvas.height;
-
-  cursor.x = x;
-  cursor.y = y;
-};
-
-const onMouseUp = (e) => {
-  window.removeEventListener('mousemove', onMouseMove);
-  window.removeEventListener('mouseup', onMouseUp);
-
-  cursor.x = 9999;
-  cursor.y = 9999;
-};
-
-canvasSketch(sketch, settings);
-
-class Particle {
-  constructor({ x, y, radius = 10}) {
-    //position
-    this.x = x;
-    this.y = y;
-
-    //acceleration
-    this.ax = 0;
-    this.ay = 0;
-
-    //velocity
-    this.vx = 0;
-    this.vy = 0;
-
-    //initial position
-    this.ix = x;
-    this.iy = y;
-
-    this.radius = radius;
-    this.scale = 1;
-    this.color = colors[0];
-    
-    this.minDist = random.range(100, 200);
-    this.pushFactor = random.range(0.001, 0.02);
-    this.pullFactor = random.range(0.002, 0.006);
-    this.dampFactor = random.range(0.9, 0.95);
-  }
-
-  update() {
-    let dx, dy, dd, distDelta;
-    let idxColor;
-
-    //pull force
-    dx = this.ix - this.x;
-    dy = this.iy - this.y;
-    dd = Math.sqrt(dx * dx + dy * dy);
-
-    this.ax = dx * this.pullFactor;
-    this.ay = dy * this.pullFactor;
-
-    this.scale = math.mapRange(dd, 0, 200, 0.8, 3)
-
-    idxColor = Math.floor(math.mapRange(dd, 0, 200, 0, colors.length - 1, true));
-    this.color = colors[idxColor];
-
-    //push force
-    dx = this.x - cursor.x;
-    dy = this.y - cursor.y;
-    dd = Math.sqrt(dx * dx + dy * dy);
-
-    distDelta = this.minDist - dd;
-
-    if (dd < this.minDist) {
-      this.ax += dx * distDelta * this.pushFactor;
-      this.ay += dy * distDelta * this.pushFactor;
+    if (audio.paused) {
+      audio.play();
+      manager.play();
+    } else {
+      audio.pause();
+      manager.pause();
     }
+  })
+};
 
-    this.ax += 0.001;
+const createAudio = () => {
+  audio = document.createElement('audio');
+  audio.src = '../public/audio/bruno-major-music.mp3';
 
-    this.vx += this.ax;
-    this.vy += this.ay;
+  audioContext = new AudioContext();
+  
+  sourceNode = audioContext.createMediaElementSource(audio);
+  sourceNode.connect(audioContext.destination);
 
-    this.vx *= this.dampFactor;
-    this.vy *= this.dampFactor;
+  analyserNode = audioContext.createAnalyser();
+  analyserNode.fftSize = 512;
+  analyserNode.smoothingTimeConstant = 0.9;
+  sourceNode.connect(analyserNode);
 
+  minDb = analyserNode.minDecibels;
+  maxDb = analyserNode.maxDecibels;
 
-    this.x += this.vx;
-    this.y += this.vy;
+  audioData = new Float32Array(analyserNode.frequencyBinCount);
+
+  // console.log(audioData.length);
+};
+
+const getAverage = data => {
+  let sum = 0;
+
+  for (let i = 0; i < data.length; i++) {
+    sum += data[i];
   }
 
-  draw(context) {
-    context.save();
-    context.translate(this.x, this.y);
-    context.fillStyle = this.color;
-
-    context.beginPath();
-    context.arc(0, 0, this.radius * this.scale, 0, Math.PI * 2);
-    context.fill();
-
-
-    context.restore();
-  }
+  return sum / data.length;
 }
-},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3,"colormap":6,"eases":26}],44:[function(require,module,exports){
+
+const loadImage = async (src) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject();
+    img.src = src;
+  });
+};
+
+const start = async () => {
+  addListeners();
+  imgA = await loadImage('./public/images/text-image-2.png');
+  manager = await canvasSketch(sketch, settings);
+  manager.pause();
+};
+
+start();
+
+},{"canvas-sketch":4,"canvas-sketch-util/math":2,"canvas-sketch-util/random":3,"eases":24}],41:[function(require,module,exports){
 (function (global){(function (){
 
 global.CANVAS_SKETCH_DEFAULT_STORAGE_KEY = window.location.href;
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}]},{},[43,44])
+},{}]},{},[40,41])
 
-//# sourceMappingURL=sketch--11.js.map
+//# sourceMappingURL=sketch-13.js.map

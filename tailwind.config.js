@@ -2,7 +2,12 @@
 module.exports = {
   content: ["./src/**/*.{html,js}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'fira-code': ['"Fira Code"', 'monospace'],
+        'jost': ['"Jost"', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 }

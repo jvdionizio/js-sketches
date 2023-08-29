@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sketches Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="./dist/output.css" rel="stylesheet">
+</head>
+<body
+  class="w-screen h-screen"
+>
+  <div
+    id="title"
+    class="flex flex-col items-center justify-center w-full gap-6 h-1/6 mt-6 p-6"
+  >
+    <span
+      class="flex items-center justify-center w-full gap-2"
+    >
+      <h1
+        class="text-4xl font-bold font-jost text-center text-gray-800"
+      >
+        JS-Sketches
+      </h1>
+      <h1
+        class="text-4xl font-bold font-jost text-center text-red-600"
+      >
+        Gallery
+      </h1>
+    </span>
+    <p
+      class="text-xl font-medium font-jost text-center text-gray-800"
+    >
+      click on a sketch to see it in action and interact with it
+    </p>
+  </div>
+  <!-- container for all 13 sketches -->
+  <div
+    id="gallery"
+    class="flex flex-wrap w-full h-full"
+  >
+  </div>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
