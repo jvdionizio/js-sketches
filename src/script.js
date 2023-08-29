@@ -14,7 +14,7 @@ const gallery = document.getElementById('gallery');
 
 for (let i = 1; i <= 13; i++) {
   const a = document.createElement('a');
-  a.href = `./sketches/sketch-${i.toString().padStart(2, '0')}.html`;
+  a.href = `../sketches/sketch-${i.toString().padStart(2, '0')}.html`;
   a
     .classList
       .add(
@@ -31,7 +31,7 @@ for (let i = 1; i <= 13; i++) {
     );
 
   const img = document.createElement('img');
-  img.src = `./output/${i.toString().padStart(2, '0')}/sketch--${i.toString().padStart(2, '0')}.png`;
+  img.src = `../output/${i.toString().padStart(2, '0')}/sketch--${i.toString().padStart(2, '0')}.png`;
   img.alt = `sketch--${i.toString().padStart(2, '0')}`;
   img.classList.add('w-full', 'border-[24px]', 'border-stone-700');
 
