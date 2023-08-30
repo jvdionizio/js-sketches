@@ -3388,58 +3388,93 @@ const settings = {
   animate: true,
 };
 
-const sketch = () => {
-  return ({ context, width, height }) => {
+const sketch = ({ context, width, height}) => {
+  const cx = width * 0.5;
+  const cy = height * 0.5;
+
+  const w = width * 0.01;
+  const h = height * 0.1;
+  let x,y;
+  
+  const num = 60;
+  const radius = width * 0.3;
+
+  const visualObjs = []
+
+  for (let i = 0; i < num; i++) {
+    const slice = math.degToRad(360/num);
+    const angle = slice * i;
+
+    visualObjs.push({
+      slice,
+      i,
+      angle,
+      rotation: random.range(0, 1) > 0.5 ? -1 : 1,
+      width: random.range(0.01, 0.5),
+      height: random.range(0.01, 0.5),
+      rectHeight: random.range(0, -h * 0.5),
+      scale: {
+        x: random.range(1,3),
+        y: random.range(0.2, 2),
+      },
+      lineWidth: random.range(5, 20),
+      arcRadius: radius * random.range(0.3, 1.3),
+      startAngle: slice * random.range(1, -8),
+      endAngle: slice * random.range(1, 5),
+    });
+  }
+
+  return ({ context, width, height, frame }) => {
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);
-
+  
     context.fillStyle = 'black';
 
-    const cx = width * 0.5;
-    const cy = height * 0.5;
+    visualObjs.forEach( visualObj => {
+      const {slice, i, angle, rotation, lineWidth,startAngle, endAngle, scale, rectHeight, arcRadius } = visualObj;
 
-    const w = width * 0.01;
-    const h = height * 0.1;
-    let x,y;
-    
-    const num = 60;
-    const radius = width * 0.3;
+      const rectAngle = slice * i + frame * 0.01 * rotation;
 
-    for (let i = 0; i < num; i++) {
-      const slice = math.degToRad(360/num);
-      const angle = slice * i;
+      const color = random.range(0, 1) < 0.2 ? "red" : "black";
 
-      x = cx + Math.sin(angle) * radius;
-      y = cy + Math.cos(angle) * radius;
-
+      const rx = cx + Math.sin(rectAngle) * radius;
+      const ry = cy + Math.cos(rectAngle) * radius;
+      //animate rects and arcs
+      visualObj.startAngle += 0.01 * rotation;
+      visualObj.endAngle += 0.01 * rotation;
+      
       context.save();
-      context.translate(x, y);
-      context.rotate(-angle);
-      context.scale(random.range(1,3), random.range(0.2, 2));
+      context.translate(rx , ry);
+      context.rotate(-rectAngle);
+      context.scale(scale.x, scale.y);
   
       context.beginPath();
-      context.rect(-w * 0.5, random.range(0, -h * 0.5),w,h);
+      context.rect(-w * 0.5, rectHeight,w,h);
+      context.fillStyle = color;
       context.fill();
       context.restore();
+      
 
       context.save();
       context.translate(cx, cy);
       context.rotate(-angle);
 
-      context.lineWidth = random.range(5,20);
+      context.lineWidth = lineWidth;
 
       context.beginPath();
       context.arc(
           0,
           0,
-          radius * random.range(0.3, 1.3),
-          slice * random.range(1, -8),
-          slice * random.range(1, 5)
+          arcRadius,
+          startAngle,
+          endAngle
         );
+      context.strokeStyle = color;
       context.stroke();
 
       context.restore();
-    }
+      
+    });
   };
 };
 
