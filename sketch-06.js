@@ -5,19 +5,22 @@ const Color = require('canvas-sketch-util/color');
 const risoColors = require('riso-colors');
 const Tweakpane = require('tweakpane');
 
-const seed = random.getRandomSeed();
-
-const settings = {
-  dimensions: [ 1080, 1080 ],
-  animate: true,
-  name: seed,
-};
 
 const params = {
   sides: 3,
   radius: 0.4,
   degrees: -30,
   rotate: 0,
+  x: 0.5,
+  y: 0.5,
+};
+
+const seed = random.getRandomSeed();
+
+const settings = {
+  dimensions: [ 1080, 1080 ],
+  animate: true,
+  name: seed,
 };
 
 const sketch = ({ context, width, height }) => {
@@ -33,10 +36,8 @@ const sketch = ({ context, width, height }) => {
 
   const bgColor = random.pick(risoColors).hex;
 
-  const maskX= width * 0.5;
-  const maskY = height * 0.58;
-
-
+  
+  
   for (let i = 0; i < num; i++) {
     x = random.range(0, width);
     y = random.range(0, height);
@@ -47,15 +48,17 @@ const sketch = ({ context, width, height }) => {
     stroke = random.pick(rectColors).hex;
 
     blend = (random.value() > 0.5) ? 'overlay' : 'multiply';
-
+    
     direction = random.value() > 0.5 ? 1 : -1;
-
+    
     velocity = random.range(0.6, 1.5);
-
+    
     rects.push({x, y, w, h, fill, stroke, blend, direction, velocity});
   }
-  
-  return ({ context, width, height, frame }) => {
+  return ({ context, width, height }) => {
+    const maskX= width * params.x;
+    const maskY = height * params.y;
+
     const degrees = params.degrees;
     // params.sides === 3 ? maskY = height * 0.58 : maskY = height * 0.5;
     context.fillStyle = bgColor;
@@ -192,7 +195,9 @@ const createPane = () => {
   folder = pane.addFolder({ title: 'Polygon Mask' });
   folder.addInput(params, 'sides', { min: 3, max: 120, step: 1 });
   folder.addInput(params, 'radius', { min: 0, max: 1, step: 0.01 });
-  folder.addInput(params, 'rotate', { min: 0, max: 4, step: 0.01 });
+  folder.addInput(params, 'rotate', { min: 0, max: 90, step: 0.01 });
+  folder.addInput(params, 'x', { min: -5, max: 5, step: 0.01, label: 'maskX' });
+  folder.addInput(params, 'y', { min: -5, max: 5, step: 0.01, label: 'maskY' });
   
   folder = pane.addFolder({ title: 'Rectangles' });
   folder.addInput(params, 'degrees', { min: -90, max: 90, step: 1 });

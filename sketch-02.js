@@ -8,6 +8,7 @@ const settings = {
 };
 
 const sketch = ({ context, width, height}) => {
+  
   const cx = width * 0.5;
   const cy = height * 0.5;
 
@@ -28,7 +29,7 @@ const sketch = ({ context, width, height}) => {
       slice,
       i,
       angle,
-      rotation: random.range(0, 1) > 0.5 ? -1 : 1,
+      rotation: random.range(-1, 2),
       width: random.range(0.01, 0.5),
       height: random.range(0.01, 0.5),
       rectHeight: random.range(0, -h * 0.5),
@@ -42,7 +43,6 @@ const sketch = ({ context, width, height}) => {
       endAngle: slice * random.range(1, 5),
     });
   }
-
   return ({ context, width, height, frame }) => {
     context.fillStyle = 'white';
     context.fillRect(0, 0, width, height);

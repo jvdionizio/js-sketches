@@ -1,6 +1,7 @@
 const canvasSketch = require('canvas-sketch');
 const math = require('canvas-sketch-util/math');
 const random = require('canvas-sketch-util/random');
+const colormap = require('colormap');
 const Tweakpane = require('tweakpane');
 
 const settings = {
@@ -18,11 +19,15 @@ const params = {
   frame: 0,
   animate: true,
   lineCap: 'butt',
+  useTheme: false,
+  theme: 'salinity',
+  color: '#000',
+  background: '#fff',
 }
 
 const sketch = () => {
   return ({ context, width, height, frame }) => {
-    context.fillStyle = 'white';
+    context.fillStyle = params.background;
     context.fillRect(0, 0, width, height);
 
     const cols = params.cols;
@@ -35,6 +40,11 @@ const sketch = () => {
     const cellh = gridh / rows;
     const margx = (width - gridw) * 0.5;
     const margy = (height - gridh) * 0.5;
+
+    const colors = colormap({
+      colormap: params.theme,
+      nshades: params.scaleMax,
+    })
 
     for (let i = 0; i < numCells; i++) {
       const col = i % cols;
@@ -70,7 +80,13 @@ const sketch = () => {
       context.beginPath();
       context.moveTo(w * -0.5, 0);
       context.lineTo(w * 0.5, 0);
-
+      
+      const {useTheme, color} = params;
+      if (useTheme) {
+      context.strokeStyle = colors[Math.floor(math.mapRange(n, -scale, scale, 0, scale))];
+      } else {
+        context.strokeStyle = color;
+      }
       context.stroke();
       
       context.restore();
@@ -88,13 +104,62 @@ const createPane = () => {
   folder.addInput(params, 'rows', { min: 2, max: 50, step: 1 });
   folder.addInput(params, 'scaleMin', { min: 1, max: 100});
   folder.addInput(params, 'scaleMax', { min: 1, max: 100});
-
+  
   folder = pane.addFolder({ title: 'Noise' });
   folder.addInput(params, 'freq', { min: -0.01, max: 0.01 });
   folder.addInput(params, 'amp', { min: 0, max: 1 });
   folder.addInput(params, 'animate');
   folder.addInput(params, 'frame', { min: 0, max: 999, step: 1 });
-
+  
+  folder = pane.addFolder({ title: 'Color' });
+  folder.addInput(params, 'color');
+  folder.addInput(params, 'background');
+  folder.addInput(params, 'useTheme');
+  folder.addInput(params, 'theme', {options: {
+    'jet': 'jet',
+    'hsv': 'hsv',
+    'hot': 'hot',
+    'cool': 'cool',
+    'spring': 'spring',
+    'summer': 'summer',
+    'autumn': 'autumn',
+    'winter': 'winter',
+    'bone': 'bone',
+    'copper': 'copper',
+    'greys': 'greys',
+    'yignbu': 'yignbu',
+    'greens': 'greens',
+    'yiorrd': 'yiorrd',
+    'bluered': 'bluered',
+    'rdbu': 'rdbu',
+    'picnic': 'picnic',
+    'rainbow': 'rainbow',
+    'portland': 'portland',
+    'blackbody': 'blackbody',
+    'earth': 'earth',
+    'electric': 'electric',
+    'viridis': 'viridis',
+    'inferno': 'inferno',
+    'magma': 'magma',
+    'plasma': 'plasma',
+    'warm': 'warm',
+    'bathymetry': 'bathymetry',
+    'cdom': 'cdom',
+    'chlorophyll': 'chlorophyll',
+    'density': 'density',
+    'freesurface-blue': 'freesurface-blue',
+    'freesurface-red': 'freesurface-red',
+    'oxygen': 'oxygen',
+    'par': 'par',
+    'phase': 'phase',
+    'salinity': 'salinity',
+    'temperature': 'temperature',
+    'turbidity': 'turbidity',
+    'velocity-blue': 'velocity-blue',
+    'velocity-green': 'velocity-green',
+    'cubehelix': 'cubehelix',
+  }});
+  
 };
 
 createPane();

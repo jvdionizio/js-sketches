@@ -22,6 +22,7 @@ const params = {
   mx: 0.6,
   my: 5.5,
   theme: 'salinity',
+  background: '#000',
 };
 
 const sketch = () => {
@@ -69,7 +70,7 @@ const sketch = () => {
       points.push(new Point({ x,y, lineWidth, color }));
     }
   
-    context.fillStyle = 'black';
+    context.fillStyle = params.background;
     context.fillRect(0, 0, width, height);
 
     context.save();
@@ -184,7 +185,8 @@ const createPane = () => {
     'velocity-blue': 'velocity-blue',
     'velocity-green': 'velocity-green',
     'cubehelix': 'cubehelix',
-  } });
+  }});
+  folder.addInput(params, 'background', {label: 'background'});
 };
 
 createPane();
