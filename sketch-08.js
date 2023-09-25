@@ -2,6 +2,7 @@ const canvasSketch = require('canvas-sketch');
 const math = require('canvas-sketch-util/math');
 const random = require('canvas-sketch-util/random');
 const colormap = require('colormap');
+const Tweakpane = require('tweakpane');
 
 const seed = random.getRandomSeed();
 
@@ -11,51 +12,63 @@ const settings = {
   name: seed,
 };
 
-const sketch = ({ context, width, height }) => {
-  random.setSeed(seed);
-  const cols = 72;
-  const rows = 8;
-  const numCells = cols * rows;
+const params = {
+  cols: 72,
+  rows: 8,
+  gw: 0.8,
+  gh: 0.8,
+  frequency: 0.002,
+  amplitude: 90,
+  mx: 0.6,
+  my: 5.5,
+  theme: 'salinity',
+};
 
-  //grid
-  const gw = width * 0.8;
-  const gh = height * 0.8;
-
-  //cell
-  const cw = gw / cols;
-  const ch = gh / rows;
-
-  //margin
-  const mx = (width - gw) * 0.5;
-  const my = (height - gh) * 0.5;
-
-  const points = [];
-
-  let x, y, n, lineWidth, color;
-  let frequency = 0.002;
-  let amplitude = 90;
-
-  const colors = colormap({
-    colormap: 'salinity',
-    nshades: amplitude,
-  })
-
-  for (let i = 0; i < numCells; i++) {
-    x = (i % cols) * cw;
-    y = Math.floor(i / cols) * ch;
-
-    n = random.noise2D(x, y, frequency, amplitude);
-    // x += n;
-    // y += n;
-
-    lineWidth = math.mapRange(n, -amplitude, amplitude, 0, 5);
-
-    color = colors[Math.floor(math.mapRange(n, -amplitude, amplitude, 0, amplitude))];
-    
-    points.push(new Point({ x,y, lineWidth, color }));
-  }
-
+const sketch = () => {
   return ({ context, width, height, frame }) => {
+    random.setSeed(seed);
+    const cols = params.cols;
+    const rows = params.rows;
+    const numCells = cols * rows;
+  
+    //grid
+    const gw = width * params.gw;
+    const gh = height * params.gh;
+  
+    //cell
+    const cw = gw / cols;
+    const ch = gh / rows;
+  
+    //margin
+    const mx = (width - gw) * 0.5;
+    const my = (height - gh) * 0.5;
+  
+    const points = [];
+  
+    let x, y, n, lineWidth, color;
+    let frequency = params.frequency;
+    let amplitude = params.amplitude;
+  
+    const colors = colormap({
+      colormap: params.theme,
+      nshades: amplitude,
+    })
+    
+    for (let i = 0; i < numCells; i++) {
+      x = (i % cols) * cw;
+      y = Math.floor(i / cols) * ch;
+  
+      n = random.noise2D(x, y, frequency, amplitude);
+      // x += n;
+      // y += n;
+  
+      lineWidth = math.mapRange(n, -amplitude, amplitude, 0, 5);
+  
+      color = colors[Math.floor(math.mapRange(n, -amplitude, amplitude, 0, amplitude))];
+      
+      points.push(new Point({ x,y, lineWidth, color }));
+    }
+  
     context.fillStyle = 'black';
     context.fillRect(0, 0, width, height);
 
@@ -81,8 +94,8 @@ const sketch = ({ context, width, height }) => {
         const curr = points[r * cols + c + 0];
         const next = points[r * cols + c + 1];
         
-        const mx = curr.x + (next.x - curr.x) * 0.8;
-        const my = curr.y + (next.y - curr.y) * 5.5;
+        const mx = curr.x + (next.x - curr.x) * params.mx;
+        const my = curr.y + (next.y - curr.y) * params.my;
 
         if (!c) {
           lastx = curr.x;
@@ -114,6 +127,67 @@ const sketch = ({ context, width, height }) => {
     context.restore();
   };
 };
+
+const createPane = () => {
+  const pane = new Tweakpane.Pane();
+  let folder;
+
+  folder = pane.addFolder({title: 'Curves'});
+  folder.addInput(params, 'frequency', {min: 0, max: 0.1, step: 0.0001});
+  folder.addInput(params, 'amplitude', {min: 0, max: 100, step: 1});
+  folder.addInput(params, 'mx', {min: -10, max: 10, step: 0.1});
+  folder.addInput(params, 'my', {min: -10, max: 10, step: 0.1});
+  folder.addInput(params, 'gw', {min: -10, max: 10, step: 0.01});
+  folder.addInput(params, 'gh', {min: -10, max: 10, step: 0.01});
+  folder.addInput(params, 'cols', {min: 2, max: 100, step: 1});
+  folder.addInput(params, 'rows', {min: 2, max: 100, step: 1});
+  folder.addInput(params, 'theme', {options: {
+    'jet': 'jet',
+    'hsv': 'hsv',
+    'hot': 'hot',
+    'cool': 'cool',
+    'spring': 'spring',
+    'summer': 'summer',
+    'autumn': 'autumn',
+    'winter': 'winter',
+    'bone': 'bone',
+    'copper': 'copper',
+    'greys': 'greys',
+    'yignbu': 'yignbu',
+    'greens': 'greens',
+    'yiorrd': 'yiorrd',
+    'bluered': 'bluered',
+    'rdbu': 'rdbu',
+    'picnic': 'picnic',
+    'rainbow': 'rainbow',
+    'portland': 'portland',
+    'blackbody': 'blackbody',
+    'earth': 'earth',
+    'electric': 'electric',
+    'viridis': 'viridis',
+    'inferno': 'inferno',
+    'magma': 'magma',
+    'plasma': 'plasma',
+    'warm': 'warm',
+    'bathymetry': 'bathymetry',
+    'cdom': 'cdom',
+    'chlorophyll': 'chlorophyll',
+    'density': 'density',
+    'freesurface-blue': 'freesurface-blue',
+    'freesurface-red': 'freesurface-red',
+    'oxygen': 'oxygen',
+    'par': 'par',
+    'phase': 'phase',
+    'salinity': 'salinity',
+    'temperature': 'temperature',
+    'turbidity': 'turbidity',
+    'velocity-blue': 'velocity-blue',
+    'velocity-green': 'velocity-green',
+    'cubehelix': 'cubehelix',
+  } });
+};
+
+createPane();
 
 canvasSketch(sketch, settings);
 
